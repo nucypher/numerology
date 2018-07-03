@@ -34,7 +34,7 @@ library FastSecp256k1 {
             return Q;
         if(Q[2] == 0)
             return P;
-        uint p = field_order;
+        uint256 p = field_order;
         uint[4] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
         zs[0] = mulmod(P[2], P[2], p);
         zs[1] = mulmod(P[2], zs[0], p);
@@ -90,7 +90,7 @@ library FastSecp256k1 {
         uint256 t0  = mulmod(Q[0], zz1, p);
         uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
 
-        if ((A == t0) && (c == t1)){
+        if ((a == t0) && (c == t1)){
             return _double(P);
         }
         uint256 d   = addmod(t1, p-c, p);
@@ -112,7 +112,7 @@ library FastSecp256k1 {
             return [Q[0], Q[1], 1];
         if(Q[1] == 0)
             return P;
-        uint p = field_order;
+        uint256 p = field_order;
         uint[2] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
         zs[0] = mulmod(P[2], P[2], p);
         zs[1] = mulmod(P[2], zs[0], p);
@@ -156,7 +156,7 @@ library FastSecp256k1 {
         }
         if(Q[1] == 0)
             return;
-        uint p = field_order;
+        uint256 p = field_order;
         uint[2] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
         zs[0] = mulmod(P[2], P[2], p);
         zs[1] = mulmod(P[2], zs[0], p);
@@ -201,6 +201,7 @@ library FastSecp256k1 {
         if(Q[1] == 0)
             return;
 
+        uint256 p = field_order;
         uint256 zz1  = mulmod(P[2], P[2], p);
         uint256 zzz1 = mulmod(P[2], zz1, p);
         uint256 t0   = mulmod(Q[0], zz1, p);
@@ -221,7 +222,7 @@ library FastSecp256k1 {
     // Params: Px, Py, Pz
     // Not concerned about the 1 extra mulmod.
     function _double(uint[3] memory P) internal constant returns (uint[3] memory Q) {
-        uint p = field_order;
+        uint256 p = field_order;
         if (P[2] == 0)
             return;
         uint Px = P[0];
@@ -237,7 +238,7 @@ library FastSecp256k1 {
 
     // Same as double but mutates P and is internal only.
     function _doubleM(uint[3] memory P) internal constant {
-        uint p = field_order;
+        uint256 p = field_order;
         if (P[2] == 0)
             return;
         uint Px = P[0];
@@ -273,7 +274,7 @@ library FastSecp256k1 {
     // // Params: d, Px, Py
     // // Output: Jacobian Q
     // function _mul(uint d, uint[2] memory P) internal constant returns (uint[3] memory Q) {
-    //     uint p = field_order;
+    //     uint256 p = field_order;
     //     if (d == 0) // TODO
     //         return;
     //     uint dwPtr; // points to array of NAF coefficients.
@@ -373,17 +374,17 @@ library FastSecp256k1 {
     // }
 
     function _sim_mul(uint256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
-        uint p = field_order;
+        uint256 p = field_order;
         
         uint[4] memory wnaf;
         uint max_count = 0;
 
-        for(int j=0; j<4; j++){
+        for(uint j=0; j<4; j++){
 
 
-            uint dwPtr; // points to array of NAF coefficients.
-            uint i = 0;
-
+            uint256 dwPtr; // points to array of NAF coefficients.
+            uint256 i = 0;
+            uint256 d = k_l[j];
             // wNAF
             assembly
             {
