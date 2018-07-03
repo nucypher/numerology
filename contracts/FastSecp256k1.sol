@@ -26,6 +26,28 @@ library FastSecp256k1 {
     uint256 constant beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
 
 
+    function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) public returns(bool){
+        uint p = field_order;
+
+        uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
+        uint256 P_z_squared = mulmod(P[2], P[2], p);
+        uint256 eq_x_lhs = mulmod(P[0], Q_z_squared, p);
+        uint256 eq_x_rhs = mulmod(Q[0], P_z_squared, p);
+
+        if (eq_x_lhs != eq_x_rhs){
+          return false;
+        }
+
+        uint256 Q_z_cubed = mulmod(Q_z_squared, Q[2], p);
+        uint256 P_z_cubed = mulmod(P_z_squared, P[2], p);
+        uint256 eq_y_lhs = mulmod(P[1], Q_z_cubed, p);
+        uint256 eq_y_rhs = mulmod(Q[1], P_z_cubed, p);
+
+        return eq_y_lhs == eq_y_rhs;
+    
+    }
+
+
     // Point addition, P + Q
     // inData: Px, Py, Pz, Qx, Qy, Qz
     // outData: Rx, Ry, Rz

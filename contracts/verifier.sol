@@ -99,7 +99,7 @@ uint256 z = 97476064113324593706654316545116846564317412959958334174760798622442
     
     uint256[3] memory ez_e1h = FastSecp256k1._sim_mul(k_l, P_Q);
 
-    return eq_jacobian(ez_e1h, [xcoord[2], ycoord[2], 1]);
+    return FastSecp256k1.eq_jacobian(ez_e1h, [xcoord[2], ycoord[2], 1]);
 
     // TODO: Shamir's trick
     // uint[3] memory e_z  = _mul(z, e);
@@ -110,27 +110,7 @@ uint256 z = 97476064113324593706654316545116846564317412959958334174760798622442
 
   }
 
-  function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) public returns(bool){
-    // Field size
-    uint p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
 
-    uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
-    uint256 P_z_squared = mulmod(P[2], P[2], p);
-    uint256 eq_x_lhs = mulmod(P[0], Q_z_squared, p);
-    uint256 eq_x_rhs = mulmod(Q[0], P_z_squared, p);
-
-    if (eq_x_lhs != eq_x_rhs){
-      return false;
-    }
-
-    uint256 Q_z_cubed = mulmod(Q_z_squared, Q[2], p);
-    uint256 P_z_cubed = mulmod(P_z_squared, P[2], p);
-    uint256 eq_y_lhs = mulmod(P[1], Q_z_cubed, p);
-    uint256 eq_y_rhs = mulmod(Q[1], P_z_cubed, p);
-
-    return eq_y_lhs == eq_y_rhs;
-    
-  }
 
   // function eq_affine_to_jacobian(uint256[2] memory P_affine, uint256[3] memory Q_jacobian) public returns(bool){
   //   // Field size
