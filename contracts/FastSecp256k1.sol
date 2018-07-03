@@ -1,5 +1,3 @@
-import "ECCMath.sol";
-
 /**
  * @title FastSecp256k1
  *
@@ -12,16 +10,16 @@ library FastSecp256k1 {
     // Field order
     uint256 constant field_order = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
 
-    // Base point (generator) G
-    uint constant Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
-    uint constant Gy = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8;
+    // // Base point (generator) G
+    // uint constant Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
+    // uint constant Gy = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8;
 
     // Order of G
     uint constant nn = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
 
 
-    // Maximum value of s
-    uint constant lowSmax = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
+    // // Maximum value of s
+    // uint constant lowSmax = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
 
     // For later
     uint256 constant lambda = 0x5363ad4cc05c30e0a5261c028812645a122e22ea20816678df02967c1b23bd72;
@@ -90,12 +88,12 @@ library FastSecp256k1 {
         uint256 a   = mulmod(P[0], zz2, p);
         uint256 c   = mulmod(P[1], mulmod(Q[2], zz2, p), p);   
         uint256 t0  = mulmod(Q[0], zz1, p);
-        uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p);
+        uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
 
         if ((A == t0) && (c == t1)){
-            return _double(P)
+            return _double(P);
         }
-        uint256 d   = addmod(t1, p), p-c, p);
+        uint256 d   = addmod(t1, p-c, p);
         uint256[3] memory b;
         b[0] = addmod(t0, p-a, p); // b
         b[1] = mulmod(b[0], b[0], p); // e = b^2
@@ -271,128 +269,127 @@ library FastSecp256k1 {
         P[2] = mulmod(_2y, P[2], p);
     }
 
-    // Multiplication dP. P affine, wNAF: w=5
-    // Params: d, Px, Py
-    // Output: Jacobian Q
-    function _mul(uint d, uint[2] memory P) internal constant returns (uint[3] memory Q) {
-        uint p = field_order;
-        if (d == 0) // TODO
-            return;
-        uint dwPtr; // points to array of NAF coefficients.
-        uint i;
+    // // Multiplication dP. P affine, wNAF: w=5
+    // // Params: d, Px, Py
+    // // Output: Jacobian Q
+    // function _mul(uint d, uint[2] memory P) internal constant returns (uint[3] memory Q) {
+    //     uint p = field_order;
+    //     if (d == 0) // TODO
+    //         return;
+    //     uint dwPtr; // points to array of NAF coefficients.
+    //     uint i;
 
-        // wNAF
-        assembly
-        {
-                let dm := 0
-                dwPtr := mload(0x40)
-                mstore(0x40, add(dwPtr, 512)) // Should lower this.
-            loop:
-                jumpi(loop_end, iszero(d))
-                jumpi(even, iszero(and(d, 1)))
-                dm := mod(d, 32)
-                mstore8(add(dwPtr, i), dm) // Don't store as signed - convert when reading.
-                d := add(sub(d, dm), mul(gt(dm, 16), 32))
-            even:
-                d := div(d, 2)
-                i := add(i, 1)
-                jump(loop)
-            loop_end:
-        }
+    //     // wNAF
+    //     assembly
+    //     {
+    //             let dm := 0
+    //             dwPtr := mload(0x40)
+    //             mstore(0x40, add(dwPtr, 512)) // Should lower this.
+    //         loop:
+    //             jumpi(loop_end, iszero(d))
+    //             jumpi(even, iszero(and(d, 1)))
+    //             dm := mod(d, 32)
+    //             mstore8(add(dwPtr, i), dm) // Don't store as signed - convert when reading.
+    //             d := add(sub(d, dm), mul(gt(dm, 16), 32))
+    //         even:
+    //             d := div(d, 2)
+    //             i := add(i, 1)
+    //             jump(loop)
+    //         loop_end:
+    //     }
 
-        // Pre calculation
-        uint[3][8] memory PREC; // P, 3P, 5P, 7P, 9P, 11P, 13P, 15P
-        PREC[0] = [P[0], P[1], 1];
-        var X = _double(PREC[0]);
-        PREC[1] = _addMixed(X, P);
-        PREC[2] = _add(X, PREC[1]);
-        PREC[3] = _add(X, PREC[2]);
-        PREC[4] = _add(X, PREC[3]);
-        PREC[5] = _add(X, PREC[4]);
-        PREC[6] = _add(X, PREC[5]);
-        PREC[7] = _add(X, PREC[6]);
+    //     // Pre calculation
+    //     uint[3][8] memory PREC; // P, 3P, 5P, 7P, 9P, 11P, 13P, 15P
+    //     PREC[0] = [P[0], P[1], 1];
+    //     var X = _double(PREC[0]);
+    //     PREC[1] = _addMixed(X, P);
+    //     PREC[2] = _add(X, PREC[1]);
+    //     PREC[3] = _add(X, PREC[2]);
+    //     PREC[4] = _add(X, PREC[3]);
+    //     PREC[5] = _add(X, PREC[4]);
+    //     PREC[6] = _add(X, PREC[5]);
+    //     PREC[7] = _add(X, PREC[6]);
 
-        uint[16] memory INV;
-        INV[0] = PREC[1][2];                            // a1
-        INV[1] = mulmod(PREC[2][2], INV[0], p);         // a2
-        INV[2] = mulmod(PREC[3][2], INV[1], p);         // a3
-        INV[3] = mulmod(PREC[4][2], INV[2], p);         // a4
-        INV[4] = mulmod(PREC[5][2], INV[3], p);         // a5
-        INV[5] = mulmod(PREC[6][2], INV[4], p);         // a6
-        INV[6] = mulmod(PREC[7][2], INV[5], p);         // a7
+    //     uint[16] memory INV;
+    //     INV[0] = PREC[1][2];                            // a1
+    //     INV[1] = mulmod(PREC[2][2], INV[0], p);         // a2
+    //     INV[2] = mulmod(PREC[3][2], INV[1], p);         // a3
+    //     INV[3] = mulmod(PREC[4][2], INV[2], p);         // a4
+    //     INV[4] = mulmod(PREC[5][2], INV[3], p);         // a5
+    //     INV[5] = mulmod(PREC[6][2], INV[4], p);         // a6
+    //     INV[6] = mulmod(PREC[7][2], INV[5], p);         // a7
 
-        INV[7] = ECCMath.invmod(INV[6], p);             // a7inv
-        INV[8] = INV[7];                                // aNinv (a7inv)
+    //     INV[7] = ECCMath.invmod(INV[6], p);             // a7inv
+    //     INV[8] = INV[7];                                // aNinv (a7inv)
 
-        INV[15] = mulmod(INV[5], INV[8], p);            // z7inv
-        for(uint k = 6; k >= 2; k--) {                  // z6inv to z2inv
-            INV[8] = mulmod(PREC[k + 1][2], INV[8], p);
-            INV[8 + k] = mulmod(INV[k - 2], INV[8], p);
-        }
-        INV[9] = mulmod(PREC[2][2], INV[8], p);         // z1Inv
-        for(k = 0; k < 7; k++) {
-            ECCMath.toZ1(PREC[k + 1], INV[k + 9], mulmod(INV[k + 9], INV[k + 9], p), p);
-        }
+    //     INV[15] = mulmod(INV[5], INV[8], p);            // z7inv
+    //     for(uint k = 6; k >= 2; k--) {                  // z6inv to z2inv
+    //         INV[8] = mulmod(PREC[k + 1][2], INV[8], p);
+    //         INV[8 + k] = mulmod(INV[k - 2], INV[8], p);
+    //     }
+    //     INV[9] = mulmod(PREC[2][2], INV[8], p);         // z1Inv
+    //     for(k = 0; k < 7; k++) {
+    //         ECCMath.toZ1(PREC[k + 1], INV[k + 9], mulmod(INV[k + 9], INV[k + 9], p), p);
+    //     }
 
-        // Mult loop
-        while(i > 0) {
-            uint dj;
-            uint pIdx;
-            i--;
-            assembly {
-                dj := byte(0, mload(add(dwPtr, i)))
-            }
-            _doubleM_jarl(Q);
-            if (dj > 16) {
-                pIdx = (31 - dj) / 2; // These are the "negative ones", so invert y.
-                _addMixedM2001b(Q, [PREC[pIdx][0], p - PREC[pIdx][1]]);
-            }
-            else if (dj > 0) {
-                pIdx = (dj - 1) / 2;
-                _addMixedM2001b(Q, [PREC[pIdx][0], PREC[pIdx][1]]);
-            }
-        }
-    }
+    //     // Mult loop
+    //     while(i > 0) {
+    //         uint dj;
+    //         uint pIdx;
+    //         i--;
+    //         assembly {
+    //             dj := byte(0, mload(add(dwPtr, i)))
+    //         }
+    //         _doubleM_jarl(Q);
+    //         if (dj > 16) {
+    //             pIdx = (31 - dj) / 2; // These are the "negative ones", so invert y.
+    //             _addMixedM2001b(Q, [PREC[pIdx][0], p - PREC[pIdx][1]]);
+    //         }
+    //         else if (dj > 0) {
+    //             pIdx = (dj - 1) / 2;
+    //             _addMixedM2001b(Q, [PREC[pIdx][0], PREC[pIdx][1]]);
+    //         }
+    //     }
+    // }
 
-    function _wnaf(uint256 k) internal constant returns (uint8[300] memory wnaf, uint8 i){
-        i = 0;
-        uint8 ki;
-        while (k>=1){
-            if(k%2==1){
-                ki = k % 16;
-                // if(ki >= 8){
-                //     ki = 16 - ki //-((-k) % 16);
-                // }   
-                k = k - ki;
-            } else {
-                ki = 0;
-            }
+    // function _wnaf(uint256 k) internal constant returns (uint8[300] memory wnaf, uint8 i){
+    //     i = 0;
+    //     uint8 ki;
+    //     while (k>=1){
+    //         if(k%2==1){
+    //             ki = k % 16;
+    //             // if(ki >= 8){
+    //             //     ki = 16 - ki //-((-k) % 16);
+    //             // }   
+    //             k = k - ki;
+    //         } else {
+    //             ki = 0;
+    //         }
 
-            k = k >> 1;
-            wnaf[i] = ki;
-            i++;
-        }
-    }
+    //         k = k >> 1;
+    //         wnaf[i] = ki;
+    //         i++;
+    //     }
+    // }
 
     function _sim_mul(uint256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
         uint p = field_order;
         
         uint[4] memory wnaf;
-        uint[4] memory wnaf_count;
-        uint index_max_count = 0;
+        uint max_count = 0;
 
         for(int j=0; j<4; j++){
 
 
             uint dwPtr; // points to array of NAF coefficients.
-            uint i;
+            uint i = 0;
 
             // wNAF
             assembly
             {
                     let dm := 0
-                    dwPtr := mload(0x40)
-                    mstore(0x40, add(dwPtr, 512)) // Should lower this.
+                    dwPtr := mload(0x40) // Get free memory pointer
+                    mstore(0x40, add(dwPtr, 512)) // Updates free memory pointer to +512 bytes offset
                 loop:
                     jumpi(loop_end, iszero(d))
                     jumpi(even, iszero(and(d, 1)))
@@ -407,9 +404,8 @@ library FastSecp256k1 {
             }
 
             wnaf[j] = dwPtr;
-            wnaf_count[j] = i;
-            if(i > wnaf_count[index_max_count]){
-                index_max_count = j;
+            if(i > max_count){
+                max_count = i;
             }
         }
 
@@ -442,21 +438,31 @@ library FastSecp256k1 {
         iP[3][3] = _add2001b(double, iP[3][2]);
 
 
-        // Mult loop
+        // LOOP 
+
+        i = max_count;
         while(i > 0) {
+
+            _doubleM_jarl(Q);
+
             uint dj;
             uint pIdx;
+
             i--;
-            assembly {
-                dj := byte(0, mload(add(dwPtr, i)))
-            }
-            _doubleM_jarl(Q);
-            if (dj > 8) {
-                pIdx = (15 - dj) / 2; // These are the "negative ones", so invert y.
-                _addMixedM2001b(Q, [PREC[pIdx][0], p - PREC[pIdx][1]]);
-            } else if (dj > 0) {
-                pIdx = (dj - 1) / 2;
-                _addMixedM2001b(Q, [PREC[pIdx][0], PREC[pIdx][1]]);
+            
+            for(j=0; j<4; j++){
+                dwPtr = wnaf[0];
+                assembly {
+                    dj := byte(0, mload(add(dwPtr, i)))
+                }
+
+                if (dj > 8) {
+                    pIdx = (15 - dj) / 2; // These are the "negative ones", so invert y.
+                    Q = _add2001b(Q, [iP[j][pIdx][0], p - iP[j][pIdx][1], iP[j][pIdx][2]]);
+                } else if (dj > 0) {
+                    pIdx = (dj - 1) / 2;
+                    Q = _add2001b(Q, [iP[j][pIdx][0], iP[j][pIdx][1], iP[j][pIdx][2]]);
+                } 
             }
         }
     }

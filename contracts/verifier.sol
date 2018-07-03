@@ -1,12 +1,8 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.24;
 
-//import "BLAKE2b.sol";
-import "Secp256k1.sol";
-//import "ECCMath.sol";
+import "./FastSecp256k1.sol";
 
 contract Verifier {
-
-  
 
   function jarl() public returns (bool){
 /*
@@ -63,13 +59,10 @@ uint256 z = 97476064113324593706654316545116846564317412959958334174760798622442
 
   //function verify(uint8 e_sign, uint256 e_x, uint8 e1_sign, uint256 e1_x, uint8 e2_sign, uint256 e2_x, uint256 z) public returns (bool){
   function verify(uint256[9] xcoord, uint256[9] ycoord, uint256 z) public returns (bool){
-  //function verify() public returns (bool){
-    // uint[2] memory  e = Secp256k1.decompress(sign[0], xcoord[0]);
-    // uint[2] memory e1 = Secp256k1.decompress(sign[1], xcoord[1]);
-    // uint[2] memory e2 = Secp256k1.decompress(sign[2], xcoord[2]);
-    uint256[2] memory  p = [xcoord[0], ycoord[0]];
-    uint256[2] memory p1 = [xcoord[1], ycoord[1]];
-    uint256[2] memory p2 = [xcoord[2], ycoord[2]];
+
+    // uint256[2] memory  p = [xcoord[0], ycoord[0]];
+    // uint256[2] memory p1 = [xcoord[1], ycoord[1]];
+    // uint256[2] memory p2 = [xcoord[2], ycoord[2]];
 
     //bytes memory input = hex"03a6eed4bb507beba20f8f90e7092d700869825820c6fc11d76949fdd31c3c9e81028f9c8b0aeae3573d160d9c7d2c19429bb151ca968cd6e05c4e32e7d6346fd938034bf61aa8f74f63424a9d164265cef9ca3d1ca8cdc1fb0316ac039c343e27d0dd023c1520224ec2718f125789aa571c30eef197580d3904a6a7b9d221fa720b07a302568f041f4f5f1aa1a2e69e6b45ca74a980e01e8a3fec50f3776157d6217a1a70020715649f4b9f51f65b9d4d28d6098fede1ebda8d4194951b15c63170a12859d002f2a09f73e56722d7383f18132b08b9bdb57fbec938fdf887645723bcb5679a1a029566538eca818af326ba4a57c0558d9f7524f92d20b69cf3e901374338d0007a02f3f9169d2b28394ed37ec42b9c5d01efa374116f03de027a0f661e3b4113fef3";
     
@@ -96,40 +89,17 @@ uint256 z = 97476064113324593706654316545116846564317412959958334174760798622442
     //uint256 h = 0x08c285be9f5e7c3a2c4f5a09c41976acdc5cb31d054065a0f54cb4bc5a028d51; //hash_to_bn(blake_upper, blake_lower);
     uint256 h = 23076743044030859900750684249730695196193450169730667016757830080314706468342;
 
-    uint[3] memory eq_lhs  = Secp256k1._mul(z, p);
+    uint256[4] memory k_l = [z, z, h, h];
+    uint256[4] memory P_Q = [xcoord[0], ycoord[0], xcoord[1], ycoord[1]];
 
-    uint[3] memory eq_rhs = Secp256k1._mul(h, p1);
-    Secp256k1._addMixedM2001b(eq_rhs, p2);
+    // uint[3] memory eq_lhs  = Secp256k1._mul(z, p);
+
+    // uint[3] memory eq_rhs = Secp256k1._mul(h, p1);
+    // Secp256k1._addMixedM2001b(eq_rhs, p2);
     
-    if(!eq_jacobian(eq_lhs, eq_rhs)){
-      return false;
-    }
+    uint256[3] memory ez_e1h = FastSecp256k1._sim_mul(k_l, P_Q);
 
-
-    p  = [xcoord[3], ycoord[3]];
-    p1 = [xcoord[4], ycoord[4]];
-    p2 = [xcoord[5], ycoord[5]];
-
-    eq_lhs  = Secp256k1._mul(z, p);
-
-    eq_rhs = Secp256k1._mul(h, p1);
-    Secp256k1._addMixedM2001b(eq_rhs, p2);
-
-    if(!eq_jacobian(eq_lhs, eq_rhs)){
-      return false;
-    }
-
-
-    p  = [xcoord[3], ycoord[3]];
-    p1 = [xcoord[4], ycoord[4]];
-    p2 = [xcoord[5], ycoord[5]];
-
-    eq_lhs  = Secp256k1._mul(z, p);
-
-    eq_rhs = Secp256k1._mul(h, p1);
-    Secp256k1._addMixedM2001b(eq_rhs, p2);
-
-      return eq_jacobian(eq_lhs, eq_rhs);
+    return eq_jacobian(ez_e1h, [xcoord[2], ycoord[2], 1]);
 
     // TODO: Shamir's trick
     // uint[3] memory e_z  = _mul(z, e);
