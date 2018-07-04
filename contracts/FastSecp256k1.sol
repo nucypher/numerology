@@ -449,6 +449,7 @@ library FastSecp256k1 {
                     jumpi(loop_end, iszero(d))
                     jumpi(even, iszero(and(d, 1)))
                     dm := mod(d, 16)
+                    dms := dm
                     if neg {
                         dms := sub(16, dm)
                     }
