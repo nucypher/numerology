@@ -109,9 +109,9 @@ library FastSecp256k1 {
         if ((a == t0) && (c == t1)){
             return _double(P);
         }
-        uint256 d   = addmod(t1, p-c, p);
+        uint256 d   = addmod(t1, p-c, p); // d = t1 - c
         uint256[3] memory b;
-        b[0] = addmod(t0, p-a, p); // b
+        b[0] = addmod(t0, p-a, p); // b = t0 - a
         b[1] = mulmod(b[0], b[0], p); // e = b^2
         b[2] = mulmod(b[1], b[0], p);  // f = b^3
         uint256 g = mulmod(a, b[1], p);
