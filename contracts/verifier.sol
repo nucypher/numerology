@@ -97,9 +97,9 @@ uint256 z = 97476064113324593706654316545116846564317412959958334174760798622442
     // uint[3] memory eq_rhs = Secp256k1._mul(h, p1);
     // Secp256k1._addMixedM2001b(eq_rhs, p2);
     
-    uint256[3] memory ez_e1h = FastSecp256k1._sim_mul(k_l, P_Q);
+    //uint256[3] memory ez_e1h = FastSecp256k1._sim_mul(k_l, P_Q);
 
-    return FastSecp256k1.eq_jacobian(ez_e1h, [xcoord[2], ycoord[2], 1]);
+    return; // FastSecp256k1.eq_jacobian(ez_e1h, [xcoord[2], ycoord[2], 1]);
 
     // TODO: Shamir's trick
     // uint[3] memory e_z  = _mul(z, e);

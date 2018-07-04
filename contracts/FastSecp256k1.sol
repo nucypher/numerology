@@ -385,6 +385,7 @@ library FastSecp256k1 {
     //     }
     // }
 
+    
     function _lookup_sim_mul(uint256[3][4][4] memory iP, uint256[4] memory P_Q) internal constant {
         uint256 p = field_order;
         uint256 beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
@@ -467,14 +468,10 @@ library FastSecp256k1 {
         }
 
         uint256[3][4][4] memory iP;
-
-
-
         _lookup_sim_mul(iP, P_Q);
 
 
         // LOOP 
-
         i = max_count;
         while(i > 0) {
 
@@ -486,7 +483,7 @@ library FastSecp256k1 {
             i--;
             
             for(j=0; j<4; j++){
-                dwPtr = wnaf[0];
+                dwPtr = wnaf[j];
                 assembly {
                     dj := byte(0, mload(add(dwPtr, i)))
                 }
@@ -496,7 +493,7 @@ library FastSecp256k1 {
                     _add2001bMutates(Q, [iP[j][pIdx][0], p - iP[j][pIdx][1], iP[j][pIdx][2]]);
                 } else if (dj > 0) {
                     pIdx = (dj - 1) / 2;
-                    _add2001bMutates(Q, [iP[j][pIdx][0], iP[j][pIdx][1], iP[j][pIdx][2]]);
+                    _add2001bMutates(Q, iP[j][pIdx]);
                 } 
             }
         }
