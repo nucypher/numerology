@@ -120,6 +120,43 @@ library FastSecp256k1 {
         R[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
     }
 
+    function _add2001bMutates(uint[3] memory P, uint[3] memory Q) internal constant {
+
+        /* 
+        http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+      */
+
+        if(P[2] == 0){
+            (P[0], P[1], P[2]) = (Q[0], Q[1], Q[2]);
+            return;
+        } else if(Q[2] == 0){
+            return;
+        }
+
+        uint256 p = field_order;
+        uint256 zz1 = mulmod(P[2], P[2], p);
+        uint256 zz2 = mulmod(Q[2], Q[2], p);
+        uint256 a   = mulmod(P[0], zz2, p);
+        uint256 c   = mulmod(P[1], mulmod(Q[2], zz2, p), p);   
+        uint256 t0  = mulmod(Q[0], zz1, p);
+        uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
+
+        if ((a == t0) && (c == t1)){
+            uint256[3] memory R = _double(P);
+            (P[0], P[1], P[2]) = (R[0], R[1], R[2]);
+            return;
+        }
+        uint256 d   = addmod(t1, p-c, p); // d = t1 - c
+        uint256[3] memory b;
+        b[0] = addmod(t0, p-a, p); // b = t0 - a
+        b[1] = mulmod(b[0], b[0], p); // e = b^2
+        b[2] = mulmod(b[1], b[0], p);  // f = b^3
+        uint256 g = mulmod(a, b[1], p);
+        P[0] = addmod(mulmod(d, d, p), p-addmod(mulmod(2, g, p), b[2], p), p);
+        P[1] = addmod(mulmod(d, addmod(g, p-P[0], p), p), p-mulmod(c, b[2], p), p);
+        P[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
+    }
+
     // Point addition, P + Q. P Jacobian, Q affine.
     // inData: Px, Py, Pz, Qx, Qy
     // outData: Rx, Ry, Rz
