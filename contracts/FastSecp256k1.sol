@@ -134,6 +134,7 @@ library FastSecp256k1 {
         }
 
         uint256 p = field_order;
+
         uint256 zz1 = mulmod(P[2], P[2], p);
         uint256 zz2 = mulmod(Q[2], Q[2], p);
         uint256 a   = mulmod(P[0], zz2, p);
@@ -146,14 +147,14 @@ library FastSecp256k1 {
             (P[0], P[1], P[2]) = (R[0], R[1], R[2]);
             return;
         }
-        uint256 d   = addmod(t1, p-c, p); // d = t1 - c
+        t1   = addmod(t1, p-c, p); // d = t1 - c
         uint256[3] memory b;
         b[0] = addmod(t0, p-a, p); // b = t0 - a
         b[1] = mulmod(b[0], b[0], p); // e = b^2
         b[2] = mulmod(b[1], b[0], p);  // f = b^3
-        uint256 g = mulmod(a, b[1], p);
-        P[0] = addmod(mulmod(d, d, p), p-addmod(mulmod(2, g, p), b[2], p), p);
-        P[1] = addmod(mulmod(d, addmod(g, p-P[0], p), p), p-mulmod(c, b[2], p), p);
+        t0 = mulmod(a, b[1], p);    // t0 is actually "g"
+        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
+        P[1] = addmod(mulmod(t1, addmod(t0, p-P[0], p), p), p-mulmod(c, b[2], p), p);
         P[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
     }
 
