@@ -31,19 +31,13 @@ library FastSecp256k1 {
 
         uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
         uint256 P_z_squared = mulmod(P[2], P[2], p);
-        uint256 eq_x_lhs = mulmod(P[0], Q_z_squared, p);
-        uint256 eq_x_rhs = mulmod(Q[0], P_z_squared, p);
-
-        if (eq_x_lhs != eq_x_rhs){
+        if (mulmod(P[0], Q_z_squared, p) != mulmod(Q[0], P_z_squared, p)){
           return false;
         }
 
         uint256 Q_z_cubed = mulmod(Q_z_squared, Q[2], p);
         uint256 P_z_cubed = mulmod(P_z_squared, P[2], p);
-        uint256 eq_y_lhs = mulmod(P[1], Q_z_cubed, p);
-        uint256 eq_y_rhs = mulmod(Q[1], P_z_cubed, p);
-
-        return eq_y_lhs == eq_y_rhs;
+        return mulmod(P[1], Q_z_cubed, p) == mulmod(Q[1], P_z_cubed, p);
     
     }
 
