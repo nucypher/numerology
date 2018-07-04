@@ -41,48 +41,6 @@ library FastSecp256k1 {
     
     }
 
-
-    // Point addition, P + Q
-    // inData: Px, Py, Pz, Qx, Qy, Qz
-    // outData: Rx, Ry, Rz
-    function _add(uint[3] memory P, uint[3] memory Q) internal constant returns (uint[3] memory R) {
-        if(P[2] == 0)
-            return Q;
-        if(Q[2] == 0)
-            return P;
-        uint256 p = field_order;
-        uint[4] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
-        zs[0] = mulmod(P[2], P[2], p);
-        zs[1] = mulmod(P[2], zs[0], p);
-        zs[2] = mulmod(Q[2], Q[2], p);
-        zs[3] = mulmod(Q[2], zs[2], p);
-        uint[4] memory us = [
-            mulmod(P[0], zs[2], p),
-            mulmod(P[1], zs[3], p),
-            mulmod(Q[0], zs[0], p),
-            mulmod(Q[1], zs[1], p)
-        ]; // Pu, Ps, Qu, Qs
-        if (us[0] == us[2]) {
-            if (us[1] != us[3])
-                return;
-            else {
-                return _double(P);
-            }
-        }
-        uint h = addmod(us[2], p - us[0], p);
-        uint r = addmod(us[3], p - us[1], p);
-        uint h2 = mulmod(h, h, p);
-        uint h3 = mulmod(h2, h, p);
-        uint Rx = addmod(mulmod(r, r, p), p - h3, p);
-        Rx = addmod(Rx, p - mulmod(2, mulmod(us[0], h2, p), p), p);
-        R[0] = Rx;
-        R[1] = mulmod(r, addmod(mulmod(us[0], h2, p), p - Rx, p), p);
-        R[1] = addmod(R[1], p - mulmod(us[1], h3, p), p);
-        R[2] = mulmod(h, mulmod(P[2], Q[2], p), p);
-
-    }
-
-
     // Point addition, P + Q
     // inData: Px, Py, Pz, Qx, Qy, Qz
     // outData: Rx, Ry, Rz
