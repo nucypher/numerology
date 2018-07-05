@@ -55,7 +55,7 @@ contract TestFastSecp256k1 {
 
   function testDoubleM_jarl() public {
 
-    uint256[3] memory G = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1];
+    uint256[3] memory G = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1]; 
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
 
     FastSecp256k1._doubleM_jarl(G);    
@@ -74,7 +74,12 @@ contract TestFastSecp256k1 {
 
     uint256[3] memory expected = [0x7635e27fba8e1f779dcfdde1b1eacbe0571fbe39ecf6056d29ba4bd3ef5e22f2, 0x197888e5cec769ac2f1eb65dbcbc0e49c00a8cdf01f8030d8286b68c1933fb18, 1];
 
-    Assert.equal(FastSecp256k1.eq_jacobian(kP_lQ, expected), true, "sim mul is incorrect");
+    bytes memory array = new bytes(32);
+    array[0] = byte(33);
+    array[1] = bytes1(0x30 + (kP_lQ[0] % 16));
+    array[2] = bytes1(0x30 + (kP_lQ[1] % 16));
+    array[3] = bytes1(0x30 + (kP_lQ[2] % 16));
+    Assert.equal(FastSecp256k1.eq_jacobian(kP_lQ, expected), true, string(array));
   }
 
 }
