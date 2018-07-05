@@ -24,6 +24,11 @@ contract TestFastSecp256k1 {
     _3G_b[2] = 23523452345234524;
 
     Assert.equal(FastSecp256k1.eq_jacobian(_3G_a, _3G_b), false, "(3gx, 3gy, 3gz) == (3gx, 3gy, some other z value)");
+
+    uint256[3] memory zero = [uint256(0), 0, 0];
+
+    Assert.equal(FastSecp256k1.eq_jacobian(zero, zero), true, "(0,0,0) != (0,0,0)");
+    Assert.equal(FastSecp256k1.eq_jacobian(zero, G), false, "(0,0,0) == G");
   }
 
   function testAdd2001b() public {
