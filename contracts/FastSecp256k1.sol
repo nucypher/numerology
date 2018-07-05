@@ -29,6 +29,12 @@ library FastSecp256k1 {
     function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) public returns(bool){
         uint p = field_order;
 
+        if(P[2] == 0){
+            return Q[2] == 0;   // P and Q are both zero.
+        } else if(Q[2] == 0){
+            return false;       // Q is zero but P isn't.
+        }
+
         uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
         uint256 P_z_squared = mulmod(P[2], P[2], p);
         if (mulmod(P[0], Q_z_squared, p) != mulmod(Q[0], P_z_squared, p)){
