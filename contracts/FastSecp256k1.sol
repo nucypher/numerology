@@ -22,8 +22,8 @@ library FastSecp256k1 {
     // uint constant lowSmax = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
 
     // For later
-    uint256 constant lambda = 0x5363ad4cc05c30e0a5261c028812645a122e22ea20816678df02967c1b23bd72;
-    uint256 constant beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
+    //uint256 constant lambda = 0x5363ad4cc05c30e0a5261c028812645a122e22ea20816678df02967c1b23bd72;
+    //uint256 constant beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
 
 
     function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) public returns(bool){
@@ -34,6 +34,8 @@ library FastSecp256k1 {
         } else if(Q[2] == 0){
             return false;       // Q is zero but P isn't.
         }
+
+        // Now we're sure none of them is zero
 
         uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
         uint256 P_z_squared = mulmod(P[2], P[2], p);
@@ -107,8 +109,8 @@ library FastSecp256k1 {
         uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
 
         if ((a == t0) && (c == t1)){
-            uint256[3] memory R = _double(P);
-            (P[0], P[1], P[2]) = (R[0], R[1], R[2]);
+            uint256[3] memory R = [P[0], P[1], P[2]];
+            _doubleM_jarl(R);
             return;
         }
         t1   = addmod(t1, p-c, p); // d = t1 - c
@@ -120,92 +122,6 @@ library FastSecp256k1 {
         P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
         P[1] = addmod(mulmod(t1, addmod(t0, p-P[0], p), p), p-mulmod(c, b[2], p), p);
         P[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
-    }
-
-    // Point addition, P + Q. P Jacobian, Q affine.
-    // inData: Px, Py, Pz, Qx, Qy
-    // outData: Rx, Ry, Rz
-    function _addMixed(uint[3] memory P, uint[2] memory Q) internal constant returns (uint[3] memory R) {
-        if(P[2] == 0)
-            return [Q[0], Q[1], 1];
-        if(Q[1] == 0)
-            return P;
-        uint256 p = field_order;
-        uint[2] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
-        zs[0] = mulmod(P[2], P[2], p);
-        zs[1] = mulmod(P[2], zs[0], p);
-        uint[4] memory us = [
-            P[0],
-            P[1],
-            mulmod(Q[0], zs[0], p),
-            mulmod(Q[1], zs[1], p)
-        ]; // Pu, Ps, Qu, Qs
-        if (us[0] == us[2]) {
-            if (us[1] != us[3]) {
-                P[0] = 0;
-                P[1] = 0;
-                P[2] = 0;
-                return;
-            }
-            else {
-                _double(P);
-                return;
-            }
-        }
-        uint h = addmod(us[2], p - us[0], p);
-        uint r = addmod(us[3], p - us[1], p);
-        uint h2 = mulmod(h, h, p);
-        uint h3 = mulmod(h2, h, p);
-        uint Rx = addmod(mulmod(r, r, p), p - h3, p);
-        Rx = addmod(Rx, p - mulmod(2, mulmod(us[0], h2, p), p), p);
-        R[0] = Rx;
-        R[1] = mulmod(r, addmod(mulmod(us[0], h2, p), p - Rx, p), p);
-        R[1] = addmod(R[1], p - mulmod(us[1], h3, p), p);
-        R[2] = mulmod(h, P[2], p);
-    }
-
-    // Same as addMixed but params are different and mutates P.
-    function _addMixedM(uint[3] memory P, uint[2] memory Q) internal constant {
-        if(P[1] == 0) {
-            P[0] = Q[0];
-            P[1] = Q[1];
-            P[2] = 1;
-            return;
-        }
-        if(Q[1] == 0)
-            return;
-        uint256 p = field_order;
-        uint[2] memory zs; // Pz^2, Pz^3, Qz^2, Qz^3
-        zs[0] = mulmod(P[2], P[2], p);
-        zs[1] = mulmod(P[2], zs[0], p);
-        uint[4] memory us = [
-            P[0],
-            P[1],
-            mulmod(Q[0], zs[0], p),
-            mulmod(Q[1], zs[1], p)
-        ]; // Pu, Ps, Qu, Qs
-        if (us[0] == us[2]) {
-            if (us[1] != us[3]) {
-                P[0] = 0;
-                P[1] = 0;
-                P[2] = 0;
-                return;
-            }
-            else {
-                _doubleM(P);
-                return;
-            }
-        }
-        uint h = addmod(us[2], p - us[0], p);
-        uint r = addmod(us[3], p - us[1], p);
-        uint h2 = mulmod(h, h, p);
-        uint h3 = mulmod(h2, h, p);
-        uint Rx = addmod(mulmod(r, r, p), p - h3, p);
-        Rx = addmod(Rx, p - mulmod(2, mulmod(us[0], h2, p), p), p);
-        P[0] = Rx;
-        P[1] = mulmod(r, addmod(mulmod(us[0], h2, p), p - Rx, p), p);
-        P[1] = addmod(P[1], p - mulmod(us[1], h3, p), p);
-        P[2] = mulmod(h, P[2], p);
     }
 
     // Same as addMixed but params are different and mutates P.
@@ -255,23 +171,9 @@ library FastSecp256k1 {
     }
 
     // Same as double but mutates P and is internal only.
-    function _doubleM(uint[3] memory P) internal constant {
-        uint256 p = field_order;
+    function _doubleM_jarl(uint[3] memory P) internal constant {
         if (P[2] == 0)
             return;
-        uint Px = P[0];
-        uint Py = P[1];
-        uint Py2 = mulmod(Py, Py, p);
-        uint s = mulmod(4, mulmod(Px, Py2, p), p);
-        uint m = mulmod(3, mulmod(Px, Px, p), p);
-        var PxTemp = addmod(mulmod(m, m, p), p - addmod(s, s, p), p);
-        P[0] = PxTemp;
-        P[1] = addmod(mulmod(m, addmod(s, p - PxTemp, p), p), p - mulmod(8, mulmod(Py2, Py2, p), p), p);
-        P[2] = mulmod(2, mulmod(Py, P[2], p), p);
-    }
-
-    // Same as double but mutates P and is internal only.
-    function _doubleM_jarl(uint[3] memory P) internal constant {
         uint256 p = field_order;
         uint256 _2y = mulmod(2, P[1], p);
         uint256 _4yy = mulmod(_2y, _2y, p);
