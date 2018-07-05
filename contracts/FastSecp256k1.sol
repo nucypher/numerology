@@ -324,64 +324,65 @@ library FastSecp256k1 {
         iP[3][3] = _add2001b(double, iP[3][2]);
     }
 
+    function _wnaf(int256 k) internal constant returns (uint256 ptr, uint256 length){
+        uint256 d;
+        uint256 neg = 0;
+        length = 0;
+
+        if(k < 0){
+            neg = 1;
+            k = -k;
+        } else {
+            neg = 0;
+        }
+        d = uint256(k);
+
+        assembly
+        {
+                let dm := 0
+                let dms := 0
+                ptr := mload(0x40) // Get free memory pointer
+                mstore(0x40, add(ptr, 512)) // Updates free memory pointer to +512 bytes offset
+            loop:
+                jumpi(loop_end, iszero(d))
+                jumpi(even, iszero(and(d, 1)))
+                dm := mod(d, 16)
+                dms := dm
+                if neg {
+                    dms := sub(16, dm)
+                }
+                mstore8(add(ptr, length), dms) // Don't store as signed - convert when reading.
+                d := add(sub(d, dm), mul(gt(dm, 8), 16))
+            even:
+                d := div(d, 2)
+                length := add(length, 1)
+                jump(loop)
+            loop_end:
+                //log3(ptr, 1, 0xfabadaacabada, k, length)    
+        }
+
+        return (ptr, length);
+    }
 
     function _sim_mul(int256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
         uint256 p = field_order;
         
-        uint[4] memory wnaf;
-        uint max_count = 0;
-        uint256 dwPtr; // points to array of NAF coefficients.
-        uint256 i = 0;
-        uint256 d;
-        int neg = 0;
+        uint256[4] memory wnaf;
+        uint256 max_count = 0;
+        uint256 count = 0;        
 
         for(uint j=0; j<4; j++){
-
-            i = 0;
-
-            if(k_l[j] < 0){
-                neg = 1;
-                d = uint256(-k_l[j]);
-            } else {
-                neg = 0;
-                d = uint256(k_l[j]);
-            }
-            // wNAF
-            assembly
-            {
-                    let dm := 0
-                    let dms := 0
-                    dwPtr := mload(0x40) // Get free memory pointer
-                    mstore(0x40, add(dwPtr, 512)) // Updates free memory pointer to +512 bytes offset
-                loop:
-                    jumpi(loop_end, iszero(d))
-                    jumpi(even, iszero(and(d, 1)))
-                    dm := mod(d, 16)
-                    dms := dm
-                    if neg {
-                        dms := sub(16, dm)
-                    }
-                    mstore8(add(dwPtr, i), dms) // Don't store as signed - convert when reading.
-                    d := add(sub(d, dm), mul(gt(dm, 8), 16))
-                even:
-                    d := div(d, 2)
-                    i := add(i, 1)
-                    jump(loop)
-                loop_end:
-            }
-
-            wnaf[j] = dwPtr;
-            if(i > max_count){
-                max_count = i;
+            (wnaf[j], count) = _wnaf(k_l[j]);
+            if(count > max_count){
+                max_count = count;
             }
         }
 
         uint256[3][4][4] memory iP;
         _lookup_sim_mul(iP, P_Q);
 
-
         // LOOP 
-        i = max_count;
+        uint256 i = max_count;
         while(i > 0) {
 
             _doubleM_jarl(Q);
@@ -390,11 +391,45 @@ library FastSecp256k1 {
             uint pIdx;
 
             i--;
-            
+            uint256 ptr;
             for(j=0; j<4; j++){
-                dwPtr = wnaf[j];
+                ptr = wnaf[j];
                 assembly {
-                    dj := byte(0, mload(add(dwPtr, i)))
+                    dj := byte(0, mload(add(ptr, i)))
+                }
+
+                if (dj > 8) {
+                    pIdx = (15 - dj) / 2; // These are the "negative ones", so invert y.
+                    _add2001bMutates(Q, [iP[j][pIdx][0], p - iP[j][pIdx][1], iP[j][pIdx][2]]);
+                } else if (dj > 0) {
+                    pIdx = (dj - 1) / 2;
+                    _add2001bMutates(Q, iP[j][pIdx]);
+                } 
+            }
+        }
+    }
+
+    function _sim_mul_wnaf(uint256[4] memory wnaf_ptr, uint256 length, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
+        uint256 p = field_order;
+
+        uint256[3][4][4] memory iP;
+        _lookup_sim_mul(iP, P_Q);
+
+        // LOOP 
+        uint256 i = length;
+        while(i > 0) {
+
+            _doubleM_jarl(Q);
+
+            uint dj;
+            uint pIdx;
+
+            i--;
+            uint256 ptr;
+            for(j=0; j<4; j++){
+                ptr = wnaf_ptr[j];
+                assembly {
+                    dj := byte(0, mload(add(ptr, i)))
                 }
 
                 if (dj > 8) {
