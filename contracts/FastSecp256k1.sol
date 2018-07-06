@@ -306,18 +306,18 @@ library FastSecp256k1 {
                 let dm := 0
                 let dms := 0
                 ptr := mload(0x40) // Get free memory pointer
-                mstore(0x40, add(ptr, 512)) // Updates free memory pointer to +512 bytes offset
+                mstore(0x40, add(ptr, 300)) // Updates free memory pointer to +512 bytes offset
             loop:
                 jumpi(loop_end, iszero(d))
-                jumpi(even, iszero(and(d, 1)))
-                dm := mod(d, 16)
-                dms := dm
-                if neg {
-                    dms := sub(16, dm)
+                if and(d, 1) {
+                    dm := mod(d, 16)
+                    dms := dm
+                    if neg {
+                        dms := sub(16, dm)
+                    }
+                    mstore8(add(ptr, length), dms) // Don't store as signed - convert when reading.
+                    d := add(sub(d, dm), mul(gt(dm, 8), 16))
                 }
-                mstore8(add(ptr, length), dms) // Don't store as signed - convert when reading.
-                d := add(sub(d, dm), mul(gt(dm, 8), 16))
-            even:
                 d := div(d, 2)
                 length := add(length, 1)
                 jump(loop)
@@ -346,8 +346,6 @@ library FastSecp256k1 {
     
 
     function _sim_mul_wnaf(uint256[4] memory wnaf_ptr, uint256 length, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
-        uint256 p = field_order;
-
         uint256[3][4][4] memory iP;
         _lookup_sim_mul(iP, P_Q);
 
@@ -360,9 +358,9 @@ library FastSecp256k1 {
 
             _doubleM_jarl(Q);
 
-            ptr = wnaf_ptr[0];
+            ptr = wnaf_ptr[0] + i;
             assembly {
-                dj := byte(0, mload(add(ptr, i)))
+                dj := byte(0, mload(ptr))
             }
 
             if (dj > 8) {
@@ -371,9 +369,9 @@ library FastSecp256k1 {
                 _add2001bMutates(Q, iP[0][(dj - 1) / 2]);
             }
 
-            ptr = wnaf_ptr[1];
+            ptr = wnaf_ptr[1] + i;
             assembly {
-                dj := byte(0, mload(add(ptr, i)))
+                dj := byte(0, mload(ptr))
             }
 
             if (dj > 8) {
@@ -382,9 +380,9 @@ library FastSecp256k1 {
                 _add2001bMutates(Q, iP[1][(dj - 1) / 2]);
             } 
 
-            ptr = wnaf_ptr[2];
+            ptr = wnaf_ptr[2] + i;
             assembly {
-                dj := byte(0, mload(add(ptr, i)))
+                dj := byte(0, mload(ptr))
             }
 
             if (dj > 8) {
@@ -393,9 +391,9 @@ library FastSecp256k1 {
                 _add2001bMutates(Q, iP[2][(dj - 1) / 2]);
             } 
 
-            ptr = wnaf_ptr[3];
+            ptr = wnaf_ptr[3] + i;
             assembly {
-                dj := byte(0, mload(add(ptr, i)))
+                dj := byte(0, mload(ptr))
             }
 
             if (dj > 8) {
