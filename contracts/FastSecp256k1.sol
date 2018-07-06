@@ -119,16 +119,16 @@ library FastSecp256k1 {
             _doubleM_jarl(P);
             return;
         }
+        
         t1   = addmod(t1, p-c, p); // d = t1 - c
-        uint256[3] memory b;
-        b[0] = addmod(t0, p-a, p); // b = t0 - a
-        b[1] = mulmod(b[0], b[0], p); // e = b^2
-        b[2] = mulmod(b[1], b[0], p);  // f = b^3
-        t0 = mulmod(a, b[1], p);    // t0 is actually "g"
-        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
+        uint256 b = addmod(t0, p-a, p); // b = t0 - a
+        uint256 e = mulmod(b, b, p); // e = b^2
+        t0 = mulmod(a, e, p);    // t0 is actually "g"
+        e = mulmod(e, b, p);  // f = b^3  (we will re-use the variable e )
+        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), e, p), p);
         uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
-        P[1] = addmod(jarl, p-mulmod(c, b[2], p), p);
-        P[2] = mulmod(b[0], mulmod(Pz, Qz, p), p);
+        P[1] = addmod(jarl, p-mulmod(c, e, p), p);
+        P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
     function _sub2001bMutates(uint[3] memory P, uint[3] memory Q) internal constant {
@@ -161,16 +161,16 @@ library FastSecp256k1 {
             P[2] = 0;
             return;
         }
+        
         t1   = addmod(t1, p-c, p); // d = t1 - c
-        uint256[3] memory b;
-        uint256 b_ = addmod(t0, p-a, p); // b = t0 - a
-        b[1] = mulmod(b_, b_, p); // e = b^2
-        b[2] = mulmod(b[1], b_, p);  // f = b^3
-        t0 = mulmod(a, b[1], p);    // t0 is actually "g"
-        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
+        uint256 b = addmod(t0, p-a, p); // b = t0 - a
+        uint256 e = mulmod(b, b, p); // e = b^2
+        t0 = mulmod(a, e, p);    // t0 is actually "g"
+        e = mulmod(e, b, p);  // f = b^3  (we will re-use the variable e )
+        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), e, p), p);
         uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
-        P[1] = addmod(jarl, p-mulmod(c, b[2], p), p);
-        P[2] = mulmod(b_, mulmod(Pz, Qz, p), p);
+        P[1] = addmod(jarl, p-mulmod(c, e, p), p);
+        P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
     // Same as addMixed but params are different and mutates P.
