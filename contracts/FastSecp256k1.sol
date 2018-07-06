@@ -205,18 +205,19 @@ library FastSecp256k1 {
     // Params: Px, Py, Pz
     // Not concerned about the 1 extra mulmod.
     function _double(uint[3] memory P) internal constant returns (uint[3] memory Q) {
-        uint256 p = field_order;
-        if (P[2] == 0)
+        uint256 z = P[2];
+        if (z == 0)
             return;
-        uint Px = P[0];
-        uint Py = P[1];
-        uint Py2 = mulmod(Py, Py, p);
-        uint s = mulmod(4, mulmod(Px, Py2, p), p);
-        uint m = mulmod(3, mulmod(Px, Px, p), p);
-        var Qx = addmod(mulmod(m, m, p), p - addmod(s, s, p), p);
+        uint256 p = field_order;
+        uint256 Px = P[0];
+        uint256 Py = P[1];
+        uint256 Py2 = mulmod(Py, Py, p);
+        uint256 s = mulmod(4, mulmod(Px, Py2, p), p);
+        uint256 m = mulmod(3, mulmod(Px, Px, p), p);
+        uint256 Qx = addmod(mulmod(m, m, p), p - addmod(s, s, p), p);
         Q[0] = Qx;
         Q[1] = addmod(mulmod(m, addmod(s, p - Qx, p), p), p - mulmod(8, mulmod(Py2, Py2, p), p), p);
-        Q[2] = mulmod(2, mulmod(Py, P[2], p), p);
+        Q[2] = mulmod(2, mulmod(Py, z, p), p);
     }
 
     // Same as double but mutates P and is internal only.
@@ -331,15 +332,13 @@ library FastSecp256k1 {
 
         // LOOP 
         uint256 i = length;
+        uint256 dj;
+        uint256 ptr;
         while(i > 0) {
+            i--;
 
             _doubleM_jarl(Q);
-
-            uint dj;
-            uint pIdx;
-
-            i--;
-            uint256 ptr;
+            
             for(uint j=0; j<4; j++){
                 ptr = wnaf_ptr[j];
                 assembly {
@@ -347,11 +346,9 @@ library FastSecp256k1 {
                 }
 
                 if (dj > 8) {
-                    pIdx = (15 - dj) / 2; // These are the "negative ones", so invert y.
-                    _add2001bMutates(Q, [iP[j][pIdx][0], p - iP[j][pIdx][1], iP[j][pIdx][2]]);
+                    _sub2001bMutates(Q, iP[j][(15 - dj) / 2]);
                 } else if (dj > 0) {
-                    pIdx = (dj - 1) / 2;
-                    _add2001bMutates(Q, iP[j][pIdx]);
+                    _add2001bMutates(Q, iP[j][(dj - 1) / 2]);
                 } 
             }
         }
