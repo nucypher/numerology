@@ -91,25 +91,30 @@ library FastSecp256k1 {
         /* 
         http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
       */
+        //(uint256 Qx, uint256 Qy, uint256 Qz) = (Q[0], Q[1], Q[2]);
+        uint256 Pz = P[2];
+        uint256 Qz = Q[2];
 
-        if(P[2] == 0){
-            (P[0], P[1], P[2]) = (Q[0], Q[1], Q[2]);
+        if(Pz == 0){
+            P[0] = Q[0];
+            P[1] = Q[1];
+            P[2] = Qz;
             return;
-        } else if(Q[2] == 0){
+        } else if(Qz == 0){
             return;
         }
 
         uint256 p = field_order;
 
-        uint256 zz1 = mulmod(P[2], P[2], p);
-        uint256 zz2 = mulmod(Q[2], Q[2], p);
-        uint256 a   = mulmod(P[0], zz2, p);
-        uint256 c   = mulmod(P[1], mulmod(Q[2], zz2, p), p);   
+        uint256 zz1 = mulmod(Pz, Pz, p);
+        uint256 Qzz = mulmod(Qz, Qz, p);
+        uint256 a   = mulmod(P[0], Qzz, p);
+        uint256 c   = mulmod(P[1], mulmod(Qz, Qzz, p), p);   
         uint256 t0  = mulmod(Q[0], zz1, p);
-        uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
+        uint256 t1  = mulmod(Q[1], mulmod(Pz, zz1, p), p);
 
         if ((a == t0) && (c == t1)){
-            uint256[3] memory R = [P[0], P[1], P[2]];
+            uint256[3] memory R = [P[0], P[1], Pz];
             _doubleM_jarl(R);
             return;
         }
@@ -120,8 +125,9 @@ library FastSecp256k1 {
         b[2] = mulmod(b[1], b[0], p);  // f = b^3
         t0 = mulmod(a, b[1], p);    // t0 is actually "g"
         P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
-        P[1] = addmod(mulmod(t1, addmod(t0, p-P[0], p), p), p-mulmod(c, b[2], p), p);
-        P[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
+        uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
+        P[1] = addmod(jarl, p-mulmod(c, b[2], p), p);
+        P[2] = mulmod(b[0], mulmod(Pz, Qz, p), p);
     }
 
     // Same as addMixed but params are different and mutates P.
@@ -172,19 +178,21 @@ library FastSecp256k1 {
 
     // Same as double but mutates P and is internal only.
     function _doubleM_jarl(uint[3] memory P) internal constant {
-        if (P[2] == 0)
+        uint256 z = P[2];
+        if (z == 0)
             return;
         uint256 p = field_order;
+        uint256 x = P[0];
         uint256 _2y = mulmod(2, P[1], p);
         uint256 _4yy = mulmod(_2y, _2y, p);
-        uint256 s = mulmod(_4yy, P[0], p);
-        uint256 m = mulmod(3, mulmod(P[0], P[0], p), p);
+        uint256 s = mulmod(_4yy, x, p);
+        uint256 m = mulmod(3, mulmod(x, x, p), p);
         uint256 t = addmod(mulmod(m, m, p), mulmod(0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2d, s, p),p);
         P[0] = t;
 
         P[1] = addmod(mulmod(m, addmod(s, p - t, p), p), mulmod(0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffe17, mulmod(_4yy, _4yy, p), p), p);
 
-        P[2] = mulmod(_2y, P[2], p);
+        P[2] = mulmod(_2y, z, p);
     }
     
     function _lookup_sim_mul(uint256[3][4][4] memory iP, uint256[4] memory P_Q) internal constant {
