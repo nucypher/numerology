@@ -156,8 +156,7 @@ library FastSecp256k1 {
         uint256 t1  = mulmod(p - Q[1], mulmod(Pz, zz1, p), p);
 
         if ((a == t0) && (c == t1)){
-            uint256[3] memory R = [P[0], P[1], Pz];
-            _doubleM_jarl(R);
+            P[2] = 0;
             return;
         }
         t1   = addmod(t1, p-c, p); // d = t1 - c
