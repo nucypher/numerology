@@ -106,12 +106,14 @@ library FastSecp256k1 {
 
         uint256 p = field_order;
 
-        uint256 zz1 = mulmod(Pz, Pz, p);
-        uint256 Qzz = mulmod(Qz, Qz, p);
-        uint256 a   = mulmod(P[0], Qzz, p);
-        uint256 c   = mulmod(P[1], mulmod(Qz, Qzz, p), p);   
-        uint256 t0  = mulmod(Q[0], zz1, p);
-        uint256 t1  = mulmod(Q[1], mulmod(Pz, zz1, p), p);
+        uint256 zz = mulmod(Pz, Pz, p);
+        uint256 t0  = mulmod(Q[0], zz, p);
+        uint256 t1  = mulmod(Q[1], mulmod(Pz, zz, p), p);
+
+        zz = mulmod(Qz, Qz, p);
+        uint256 a   = mulmod(P[0], zz, p);
+        uint256 c   = mulmod(P[1], mulmod(Qz, zz, p), p);   
+        
 
         if ((a == t0) && (c == t1)){
             _doubleM_jarl(P);
@@ -161,14 +163,14 @@ library FastSecp256k1 {
         }
         t1   = addmod(t1, p-c, p); // d = t1 - c
         uint256[3] memory b;
-        b[0] = addmod(t0, p-a, p); // b = t0 - a
-        b[1] = mulmod(b[0], b[0], p); // e = b^2
-        b[2] = mulmod(b[1], b[0], p);  // f = b^3
+        uint256 b_ = addmod(t0, p-a, p); // b = t0 - a
+        b[1] = mulmod(b_, b_, p); // e = b^2
+        b[2] = mulmod(b[1], b_, p);  // f = b^3
         t0 = mulmod(a, b[1], p);    // t0 is actually "g"
         P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
         uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
         P[1] = addmod(jarl, p-mulmod(c, b[2], p), p);
-        P[2] = mulmod(b[0], mulmod(Pz, Qz, p), p);
+        P[2] = mulmod(b_, mulmod(Pz, Qz, p), p);
     }
 
     // Same as addMixed but params are different and mutates P.
