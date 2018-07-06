@@ -341,6 +341,8 @@ library FastSecp256k1 {
         Q = _sim_mul_wnaf(wnaf, max_count, P_Q);
     }
 
+    
+
     function _sim_mul_wnaf(uint256[4] memory wnaf_ptr, uint256 length, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
         uint256 p = field_order;
 
@@ -355,19 +357,51 @@ library FastSecp256k1 {
             i--;
 
             _doubleM_jarl(Q);
-            
-            for(uint j=0; j<4; j++){
-                ptr = wnaf_ptr[j];
-                assembly {
-                    dj := byte(0, mload(add(ptr, i)))
-                }
 
-                if (dj > 8) {
-                    _sub2001bMutates(Q, iP[j][(15 - dj) / 2]);
-                } else if (dj > 0) {
-                    _add2001bMutates(Q, iP[j][(dj - 1) / 2]);
-                } 
+            ptr = wnaf_ptr[0];
+            assembly {
+                dj := byte(0, mload(add(ptr, i)))
             }
+
+            if (dj > 8) {
+                _sub2001bMutates(Q, iP[0][(15 - dj) / 2]);
+            } else if (dj > 0) {
+                _add2001bMutates(Q, iP[0][(dj - 1) / 2]);
+            }
+
+            ptr = wnaf_ptr[1];
+            assembly {
+                dj := byte(0, mload(add(ptr, i)))
+            }
+
+            if (dj > 8) {
+                _sub2001bMutates(Q, iP[1][(15 - dj) / 2]);
+            } else if (dj > 0) {
+                _add2001bMutates(Q, iP[1][(dj - 1) / 2]);
+            } 
+
+            ptr = wnaf_ptr[2];
+            assembly {
+                dj := byte(0, mload(add(ptr, i)))
+            }
+
+            if (dj > 8) {
+                _sub2001bMutates(Q, iP[2][(15 - dj) / 2]);
+            } else if (dj > 0) {
+                _add2001bMutates(Q, iP[2][(dj - 1) / 2]);
+            } 
+
+            ptr = wnaf_ptr[3];
+            assembly {
+                dj := byte(0, mload(add(ptr, i)))
+            }
+
+            if (dj > 8) {
+                _sub2001bMutates(Q, iP[3][(15 - dj) / 2]);
+            } else if (dj > 0) {
+                _add2001bMutates(Q, iP[3][(dj - 1) / 2]);
+            } 
+            
         }
     }
 
