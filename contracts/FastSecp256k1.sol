@@ -126,8 +126,8 @@ library FastSecp256k1 {
         t0 = mulmod(a, e, p);    // t0 is actually "g"
         e = mulmod(e, b, p);  // f = b^3  (we will re-use the variable e )
         P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), e, p), p);
-        uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
-        P[1] = addmod(jarl, p-mulmod(c, e, p), p);
+        uint256 Py_temp = mulmod(t1, addmod(t0, p-P[0], p), p);
+        P[1] = addmod(Py_temp, p-mulmod(c, e, p), p);
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
@@ -150,12 +150,13 @@ library FastSecp256k1 {
             return;
         }
 
-        uint256 zz1 = mulmod(Pz, Pz, p);
-        uint256 Qzz = mulmod(Qz, Qz, p);
-        uint256 a   = mulmod(P[0], Qzz, p);
-        uint256 c   = mulmod(P[1], mulmod(Qz, Qzz, p), p);   
-        uint256 t0  = mulmod(Q[0], zz1, p);
-        uint256 t1  = mulmod(p - Q[1], mulmod(Pz, zz1, p), p);
+        uint256 zz = mulmod(Pz, Pz, p);
+        uint256 t0  = mulmod(Q[0], zz, p);
+        uint256 t1  = mulmod(p - Q[1], mulmod(Pz, zz, p), p);
+
+        zz = mulmod(Qz, Qz, p);
+        uint256 a   = mulmod(P[0], zz, p);
+        uint256 c   = mulmod(P[1], mulmod(Qz, zz, p), p); 
 
         if ((a == t0) && (c == t1)){
             P[2] = 0;
@@ -168,8 +169,8 @@ library FastSecp256k1 {
         t0 = mulmod(a, e, p);    // t0 is actually "g"
         e = mulmod(e, b, p);  // f = b^3  (we will re-use the variable e )
         P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), e, p), p);
-        uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
-        P[1] = addmod(jarl, p-mulmod(c, e, p), p);
+        uint256 Py_temp = mulmod(t1, addmod(t0, p-P[0], p), p);
+        P[1] = addmod(Py_temp, p-mulmod(c, e, p), p);
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
