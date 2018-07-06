@@ -240,31 +240,45 @@ library FastSecp256k1 {
     function _lookup_sim_mul(uint256[3][4][4] memory iP, uint256[4] memory P_Q) internal constant {
         uint256 p = field_order;
         uint256 beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
-        iP[0][0] = [P_Q[0], P_Q[1], 1];                     // P1
-        iP[1][0] = [mulmod(beta, P_Q[0], p), P_Q[1], 1];    // P2
-        iP[2][0] = [P_Q[2], P_Q[3], 1];                     // Q1
-        iP[3][0] = [mulmod(beta, P_Q[2], p), P_Q[3], 1];    // Q2
 
-        // Lookup table
-        uint256[3] memory double = _double(iP[0][0]);
-        iP[0][1] = _add2001b(double, iP[0][0]);
-        iP[0][2] = _add2001b(double, iP[0][1]);
-        iP[0][3] = _add2001b(double, iP[0][2]);
+        uint256[3][4] memory iPj;
+        uint256[3] memory double;
 
-        double = _double(iP[1][0]);
-        iP[1][1] = _add2001b(double, iP[1][0]);
-        iP[1][2] = _add2001b(double, iP[1][1]);
-        iP[1][3] = _add2001b(double, iP[1][2]);
+        // P1 Lookup Table
+        iPj = iP[0];
+        iPj[0] = [P_Q[0], P_Q[1], 1];  // P1
+        
+        double = _double(iPj[0]);
+        iPj[1] = _add2001b(double, iPj[0]);
+        iPj[2] = _add2001b(double, iPj[1]);
+        iPj[3] = _add2001b(double, iPj[2]);
 
-        double = _double(iP[2][0]);
-        iP[2][1] = _add2001b(double, iP[2][0]);
-        iP[2][2] = _add2001b(double, iP[2][1]);
-        iP[2][3] = _add2001b(double, iP[2][2]);
+        // P1 Lookup Table
+        iPj = iP[1];
+        iPj[0] = [mulmod(beta, P_Q[0], p), P_Q[1], 1];    // P2
 
-        double = _double(iP[3][0]);
-        iP[3][1] = _add2001b(double, iP[3][0]);
-        iP[3][2] = _add2001b(double, iP[3][1]);
-        iP[3][3] = _add2001b(double, iP[3][2]);
+        double = _double(iPj[0]);
+        iPj[1] = _add2001b(double, iPj[0]);
+        iPj[2] = _add2001b(double, iPj[1]);
+        iPj[3] = _add2001b(double, iPj[2]);
+
+        // Q1 Lookup Table
+        iPj = iP[2];
+        iPj[0] = [P_Q[2], P_Q[3], 1];                     // Q1
+
+        double = _double(iPj[0]);
+        iPj[1] = _add2001b(double, iPj[0]);
+        iPj[2] = _add2001b(double, iPj[1]);
+        iPj[3] = _add2001b(double, iPj[2]);
+
+        // Q2 Lookup Table
+        iPj = iP[3];
+        iPj[0] = [mulmod(beta, P_Q[2], p), P_Q[3], 1];    // Q2
+
+        double = _double(iPj[0]);
+        iPj[1] = _add2001b(double, iPj[0]);
+        iPj[2] = _add2001b(double, iPj[1]);
+        iPj[3] = _add2001b(double, iPj[2]);
     }
 
     function _wnaf(int256 k) internal constant returns (uint256 ptr, uint256 length){
