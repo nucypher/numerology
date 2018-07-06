@@ -130,6 +130,49 @@ library FastSecp256k1 {
         P[2] = mulmod(b[0], mulmod(Pz, Qz, p), p);
     }
 
+    function _sub2001bMutates(uint[3] memory P, uint[3] memory Q) internal constant {
+
+        /* 
+        http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+      */
+        //(uint256 Qx, uint256 Qy, uint256 Qz) = (Q[0], Q[1], Q[2]);
+        uint256 Pz = P[2];
+        uint256 Qz = Q[2];
+        uint256 p = field_order;
+
+        if(Pz == 0){
+            P[0] = Q[0];
+            P[1] = p - Q[1];
+            P[2] = Qz;
+            return;
+        } else if(Qz == 0){
+            return;
+        }
+
+        uint256 zz1 = mulmod(Pz, Pz, p);
+        uint256 Qzz = mulmod(Qz, Qz, p);
+        uint256 a   = mulmod(P[0], Qzz, p);
+        uint256 c   = mulmod(P[1], mulmod(Qz, Qzz, p), p);   
+        uint256 t0  = mulmod(Q[0], zz1, p);
+        uint256 t1  = mulmod(p - Q[1], mulmod(Pz, zz1, p), p);
+
+        if ((a == t0) && (c == t1)){
+            uint256[3] memory R = [P[0], P[1], Pz];
+            _doubleM_jarl(R);
+            return;
+        }
+        t1   = addmod(t1, p-c, p); // d = t1 - c
+        uint256[3] memory b;
+        b[0] = addmod(t0, p-a, p); // b = t0 - a
+        b[1] = mulmod(b[0], b[0], p); // e = b^2
+        b[2] = mulmod(b[1], b[0], p);  // f = b^3
+        t0 = mulmod(a, b[1], p);    // t0 is actually "g"
+        P[0] = addmod(mulmod(t1, t1, p), p-addmod(mulmod(2, t0, p), b[2], p), p);
+        uint256 jarl = mulmod(t1, addmod(t0, p-P[0], p), p);
+        P[1] = addmod(jarl, p-mulmod(c, b[2], p), p);
+        P[2] = mulmod(b[0], mulmod(Pz, Qz, p), p);
+    }
+
     // Same as addMixed but params are different and mutates P.
     function _addMixedM2001b(uint[3] memory P, uint[2] memory Q) internal constant {
         if(P[1] == 0) {
