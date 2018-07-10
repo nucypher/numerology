@@ -167,15 +167,15 @@ library FastSecp256k1 {
         if (z == 0)
             return;
         uint256 p = field_order;
-        uint256 Px = P[0];
-        uint256 Py = P[1];
-        uint256 Py2 = mulmod(Py, Py, p);
-        uint256 s = mulmod(4, mulmod(Px, Py2, p), p);
-        uint256 m = mulmod(3, mulmod(Px, Px, p), p);
-        uint256 Qx = addmod(mulmod(m, m, p), p - addmod(s, s, p), p);
-        Q[0] = Qx;
-        Q[1] = addmod(mulmod(m, addmod(s, p - Qx, p), p), p - mulmod(8, mulmod(Py2, Py2, p), p), p);
-        Q[2] = mulmod(2, mulmod(Py, z, p), p);
+        uint256 x = P[0];
+        uint256 _2y = mulmod(2, P[1], p);
+        uint256 _4yy = mulmod(_2y, _2y, p);
+        uint256 s = mulmod(_4yy, x, p);
+        uint256 m = mulmod(3, mulmod(x, x, p), p);
+        uint256 t = addmod(mulmod(m, m, p), mulmod(0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2d, s, p),p);
+        Q[0] = t;
+        Q[1] = addmod(mulmod(m, addmod(s, p - t, p), p), mulmod(0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffe17, mulmod(_4yy, _4yy, p), p), p);
+        Q[2] = mulmod(_2y, z, p);
     }
 
     // Same as double but mutates P and is internal only.
