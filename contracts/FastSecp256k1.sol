@@ -239,41 +239,28 @@ library FastSecp256k1 {
         iPj[3] = addJac(double, iPj[2]);
     }
 
-    function _wnaf(int256 k) internal constant returns (uint256 ptr, uint256 length){
-        uint256 d;
-        uint256 neg = 0;
+    function _wnaf(int256 d) internal constant returns (uint256 ptr, uint256 length){
+    
+        int sign = d < 0 ? -1 : int(1);
+        uint256 k = uint256(sign * d);
+
         length = 0;
-
-        if(k < 0){
-            neg = 1;
-            k = -k;
-        } else {
-            neg = 0;
-        }
-        d = uint256(k);
-
         assembly
         {
-                let dm := 0
-                let dms := 0
-                ptr := mload(0x40) // Get free memory pointer
-                mstore(0x40, add(ptr, 300)) // Updates free memory pointer to +512 bytes offset
-            loop:
-                jumpi(loop_end, iszero(d))
-                if and(d, 1) {
-                    dm := mod(d, 16)
-                    dms := dm
-                    if neg {
-                        dms := sub(16, dm)
-                    }
-                    mstore8(add(ptr, length), dms) // Don't store as signed - convert when reading.
-                    d := add(sub(d, dm), mul(gt(dm, 8), 16))
+            let ki := 0
+            ptr := mload(0x40) // Get free memory pointer
+            mstore(0x40, add(ptr, 300)) // Updates free memory pointer to +512 bytes offset
+            for { } gt(k, 0) { } { // while k > 0
+                if and(k, 1) {  // if k is odd:
+                    ki := mod(k, 16)
+                    k := add(sub(k, ki), mul(gt(ki, 8), 16))
+                    // if sign = 1, store ki; if sign = -1, store 16 - ki
+                    mstore8(add(ptr, length), add(mul(ki, sign), sub(8, mul(sign, 8))))
                 }
-                d := div(d, 2)
                 length := add(length, 1)
-                jump(loop)
-            loop_end:
-                //log3(ptr, 1, 0xfabadaacabada, k, length)    
+                k := div(k, 2)
+            }
+            //log3(ptr, 1, 0xfabadaacabada, d, length)    
         }
 
         return (ptr, length);
