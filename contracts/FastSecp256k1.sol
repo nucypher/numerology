@@ -1,33 +1,16 @@
 pragma solidity ^0.4.24;
 
-/**
- * @title FastSecp256k1
- *
- * Fast ECC arithmetics for curve secp256k1
- *
- * @author David Nuñez (david@nucypher.com)
- */
+
+/// @title FastSecp256k1: A Soidity library for fast ECC arithmetics using curve secp256k1
+/// @author David Nuñez (david@nucypher.com)
 library FastSecp256k1 {
 
-    // Field order
     uint256 constant field_order = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
 
-    // // Base point (generator) G
-    // uint constant Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
-    // uint constant Gy = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8;
-
-    // Order of G
-    uint constant nn = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
-
-
-    // // Maximum value of s
-    // uint constant lowSmax = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
-
-    // For later
-    //uint256 constant lambda = 0x5363ad4cc05c30e0a5261c028812645a122e22ea20816678df02967c1b23bd72;
-    //uint256 constant beta = 0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee;
-
-
+    /// @notice Equality test of two points in Jacobian coordinates
+    /// @param P An EC point in Jacobian coordinates
+    /// @param Q An EC point in Jacobian coordinates
+    /// @return true if P and Q represent the same point in affine coordinates; false otherwise
     function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) public returns(bool){
         uint p = field_order;
 
@@ -51,14 +34,12 @@ library FastSecp256k1 {
     
     }
 
-    // Point addition, P + Q
-    // inData: Px, Py, Pz, Qx, Qy, Qz
-    // outData: Rx, Ry, Rz
-    function _add2001b(uint[3] memory P, uint[3] memory Q) internal constant returns (uint[3] memory R) {
-
-        /* 
-        http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
-      */
+    /// @notice Addition of two points in Jacobian coordinates
+    /// @dev Based on the addition formulas from http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+    /// @param P An EC point in Jacobian coordinates
+    /// @param Q An EC point in Jacobian coordinates
+    /// @return An EC point in Jacobian coordinates with the sum , represented by an array of 3 uint256
+    function addJac(uint[3] memory P, uint[3] memory Q) internal constant returns (uint[3] memory R) {
 
         if(P[2] == 0){
             return Q;
@@ -75,7 +56,7 @@ library FastSecp256k1 {
         uint256 t1  = mulmod(Q[1], mulmod(P[2], zz1, p), p);
 
         if ((a == t0) && (c == t1)){
-            return _double(P);
+            return doubleJac(P);
         }
         uint256 d   = addmod(t1, p-c, p); // d = t1 - c
         uint256[3] memory b;
@@ -88,12 +69,12 @@ library FastSecp256k1 {
         R[2] = mulmod(b[0], mulmod(P[2], Q[2], p), p);
     }
 
-    function _add2001bMutates(uint[3] memory P, uint[3] memory Q) internal constant {
+    /// @notice Addition of two points in Jacobian coordinates, placing the result in the first point
+    /// @dev Based on the addition formulas from http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+    /// @param P An EC point in Jacobian coordinates. The result is returned here.
+    /// @param Q An EC point in Jacobian coordinates
+    function addJacMutates(uint[3] memory P, uint[3] memory Q) internal constant {
 
-        /* 
-        http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
-      */
-        //(uint256 Qx, uint256 Qy, uint256 Qz) = (Q[0], Q[1], Q[2]);
         uint256 Pz = P[2];
         uint256 Qz = Q[2];
 
@@ -118,7 +99,7 @@ library FastSecp256k1 {
         
 
         if ((a == t0) && (c == t1)){
-            _doubleM_jarl(P);
+            doubleMutates(P);
             return;
         }
         
@@ -134,12 +115,12 @@ library FastSecp256k1 {
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
-    function _sub2001bMutates(uint[3] memory P, uint[3] memory Q) internal constant {
+    /// @notice Subtraction of two points in Jacobian coordinates, placing the result in the first point
+    /// @dev Based on the addition formulas from http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+    /// @param P An EC point in Jacobian coordinates. The result is returned here.
+    /// @param Q An EC point in Jacobian coordinates
+    function subJacMutates(uint[3] memory P, uint[3] memory Q) internal constant {
 
-        /* 
-        http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
-      */
-        //(uint256 Qx, uint256 Qy, uint256 Qz) = (Q[0], Q[1], Q[2]);
         uint256 Pz = P[2];
         uint256 Qz = Q[2];
         uint256 p = field_order;
@@ -178,38 +159,10 @@ library FastSecp256k1 {
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
-    // Same as addMixed but params are different and mutates P.
-    function _addMixedM2001b(uint[3] memory P, uint[2] memory Q) internal constant {
-        if(P[1] == 0) {
-            P[0] = Q[0];
-            P[1] = Q[1];
-            P[2] = 1;
-            return;
-        }
-        if(Q[1] == 0)
-            return;
-
-        uint256 p = field_order;
-        uint256 zz1  = mulmod(P[2], P[2], p);
-        uint256 zzz1 = mulmod(P[2], zz1, p);
-        uint256 t0   = mulmod(Q[0], zz1, p);
-        uint256 t1   = mulmod(Q[1], zzz1, p);
-        uint256 b    = addmod(t0, p-P[0], p); // h
-        uint256 d    = addmod(t1, p-P[1], p); // r
-
-        uint256 e    = mulmod(b, b, p); // h2
-        uint256 f    = mulmod(b, e, p); //  h3
-
-        uint256 g    = mulmod(P[0], e, p);
-        P[0]   = addmod(mulmod(d, d, p), p-addmod(mulmod(2, g, p), f, p), p);
-        P[1]   = addmod(mulmod(d, addmod(g, p-P[0], p), p), p-mulmod(P[1], f, p), p);
-        P[2]   = mulmod(b, P[2], p);
-    }
-
     // Point doubling, 2*P
     // Params: Px, Py, Pz
     // Not concerned about the 1 extra mulmod.
-    function _double(uint[3] memory P) internal constant returns (uint[3] memory Q) {
+    function doubleJac(uint[3] memory P) internal constant returns (uint[3] memory Q) {
         uint256 z = P[2];
         if (z == 0)
             return;
@@ -226,7 +179,7 @@ library FastSecp256k1 {
     }
 
     // Same as double but mutates P and is internal only.
-    function _doubleM_jarl(uint[3] memory P) internal constant {
+    function doubleMutates(uint[3] memory P) internal constant {
         uint256 z = P[2];
         if (z == 0)
             return;
@@ -238,9 +191,7 @@ library FastSecp256k1 {
         uint256 m = mulmod(3, mulmod(x, x, p), p);
         uint256 t = addmod(mulmod(m, m, p), mulmod(0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2d, s, p),p);
         P[0] = t;
-
         P[1] = addmod(mulmod(m, addmod(s, p - t, p), p), mulmod(0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffe17, mulmod(_4yy, _4yy, p), p), p);
-
         P[2] = mulmod(_2y, z, p);
     }
     
@@ -255,37 +206,37 @@ library FastSecp256k1 {
         iPj = iP[0];
         iPj[0] = [P_Q[0], P_Q[1], 1];  // P1
         
-        double = _double(iPj[0]);
-        iPj[1] = _add2001b(double, iPj[0]);
-        iPj[2] = _add2001b(double, iPj[1]);
-        iPj[3] = _add2001b(double, iPj[2]);
+        double = doubleJac(iPj[0]);
+        iPj[1] = addJac(double, iPj[0]);
+        iPj[2] = addJac(double, iPj[1]);
+        iPj[3] = addJac(double, iPj[2]);
 
         // P1 Lookup Table
         iPj = iP[1];
         iPj[0] = [mulmod(beta, P_Q[0], p), P_Q[1], 1];    // P2
 
-        double = _double(iPj[0]);
-        iPj[1] = _add2001b(double, iPj[0]);
-        iPj[2] = _add2001b(double, iPj[1]);
-        iPj[3] = _add2001b(double, iPj[2]);
+        double = doubleJac(iPj[0]);
+        iPj[1] = addJac(double, iPj[0]);
+        iPj[2] = addJac(double, iPj[1]);
+        iPj[3] = addJac(double, iPj[2]);
 
         // Q1 Lookup Table
         iPj = iP[2];
         iPj[0] = [P_Q[2], P_Q[3], 1];                     // Q1
 
-        double = _double(iPj[0]);
-        iPj[1] = _add2001b(double, iPj[0]);
-        iPj[2] = _add2001b(double, iPj[1]);
-        iPj[3] = _add2001b(double, iPj[2]);
+        double = doubleJac(iPj[0]);
+        iPj[1] = addJac(double, iPj[0]);
+        iPj[2] = addJac(double, iPj[1]);
+        iPj[3] = addJac(double, iPj[2]);
 
         // Q2 Lookup Table
         iPj = iP[3];
         iPj[0] = [mulmod(beta, P_Q[2], p), P_Q[3], 1];    // Q2
 
-        double = _double(iPj[0]);
-        iPj[1] = _add2001b(double, iPj[0]);
-        iPj[2] = _add2001b(double, iPj[1]);
-        iPj[3] = _add2001b(double, iPj[2]);
+        double = doubleJac(iPj[0]);
+        iPj[1] = addJac(double, iPj[0]);
+        iPj[2] = addJac(double, iPj[1]);
+        iPj[3] = addJac(double, iPj[2]);
     }
 
     function _wnaf(int256 k) internal constant returns (uint256 ptr, uint256 length){
@@ -351,55 +302,55 @@ library FastSecp256k1 {
 
         // LOOP 
         uint256 i = length;
-        uint256 dj;
+        uint256 ki;
         uint256 ptr;
         while(i > 0) {
             i--;
 
-            _doubleM_jarl(Q);
+            doubleMutates(Q);
 
             ptr = wnaf_ptr[0] + i;
             assembly {
-                dj := byte(0, mload(ptr))
+                ki := byte(0, mload(ptr))
             }
 
-            if (dj > 8) {
-                _sub2001bMutates(Q, iP[0][(15 - dj) / 2]);
-            } else if (dj > 0) {
-                _add2001bMutates(Q, iP[0][(dj - 1) / 2]);
+            if (ki > 8) {
+                subJacMutates(Q, iP[0][(15 - ki) / 2]);
+            } else if (ki > 0) {
+                addJacMutates(Q, iP[0][(ki - 1) / 2]);
             }
 
             ptr = wnaf_ptr[1] + i;
             assembly {
-                dj := byte(0, mload(ptr))
+                ki := byte(0, mload(ptr))
             }
 
-            if (dj > 8) {
-                _sub2001bMutates(Q, iP[1][(15 - dj) / 2]);
-            } else if (dj > 0) {
-                _add2001bMutates(Q, iP[1][(dj - 1) / 2]);
+            if (ki > 8) {
+                subJacMutates(Q, iP[1][(15 - ki) / 2]);
+            } else if (ki > 0) {
+                addJacMutates(Q, iP[1][(ki - 1) / 2]);
             } 
 
             ptr = wnaf_ptr[2] + i;
             assembly {
-                dj := byte(0, mload(ptr))
+                ki := byte(0, mload(ptr))
             }
 
-            if (dj > 8) {
-                _sub2001bMutates(Q, iP[2][(15 - dj) / 2]);
-            } else if (dj > 0) {
-                _add2001bMutates(Q, iP[2][(dj - 1) / 2]);
+            if (ki > 8) {
+                subJacMutates(Q, iP[2][(15 - ki) / 2]);
+            } else if (ki > 0) {
+                addJacMutates(Q, iP[2][(ki - 1) / 2]);
             } 
 
             ptr = wnaf_ptr[3] + i;
             assembly {
-                dj := byte(0, mload(ptr))
+                ki := byte(0, mload(ptr))
             }
 
-            if (dj > 8) {
-                _sub2001bMutates(Q, iP[3][(15 - dj) / 2]);
-            } else if (dj > 0) {
-                _add2001bMutates(Q, iP[3][(dj - 1) / 2]);
+            if (ki > 8) {
+                subJacMutates(Q, iP[3][(15 - ki) / 2]);
+            } else if (ki > 0) {
+                addJacMutates(Q, iP[3][(ki - 1) / 2]);
             } 
             
         }
