@@ -1,5 +1,5 @@
 # Numerology 
-*Fast ECC arithmetic library for secp256k1 in Solidity*
+*Optimized ECC arithmetic library for secp256k1 in Solidity*
 
 **WARNING: Don't use it with any private input (e.g., a private key), as it's going to be exposed. Don't ever use this to sign something! Also, this is experimental -- Use at your own risk!**
 
@@ -9,6 +9,6 @@ It's initially based on the [ECCMath library](https://github.com/androlo/standar
 
 ### Features:
 - Point addition and doubling in Jacobian coordinates with optimized formulas.
-- Simultaneous scalar multiplication with several optimizations (interleaving, WNAF form, curve endomorphism).
-- Verifying an equation of the form `aP + bQ = R` takes approximately 450,000 gas.
+- Simultaneous scalar multiplication with several optimizations (interleaving, WNAF representation, curve endomorphism).
+- Verifying an equation of the form `aP + bQ = R` takes approximately 500,000 gas.
 
