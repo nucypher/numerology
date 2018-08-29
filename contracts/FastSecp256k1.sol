@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
 
-/// @title FastSecp256k1: A Soidity library for fast ECC arithmetics using curve secp256k1
+/// @title Numerology: A Soidity library for fast ECC arithmetics using curve secp256k1
 /// @author David Nuñez (david@nucypher.com)
-library FastSecp256k1 {
+library Numerology {
 
     uint256 constant field_order = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
 
