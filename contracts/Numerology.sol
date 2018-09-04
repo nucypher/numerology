@@ -205,25 +205,23 @@ library Numerology {
 
         // P1 Lookup Table
         iPj = iP[0];
-        iPj[0] = [P_Q[0], P_Q[1], 1];  // P1
+        iPj[0] = [P_Q[0], P_Q[1], 1];  						// P1
         
         double = doubleJac(iPj[0]);
         iPj[1] = addJac(double, iPj[0]);
         iPj[2] = addJac(double, iPj[1]);
         iPj[3] = addJac(double, iPj[2]);
 
-        // P1 Lookup Table
-        iPj = iP[1];
-        iPj[0] = [mulmod(beta, P_Q[0], p), P_Q[1], 1];    // P2
+        // P2 Lookup Table
+        iP[1][0] = [mulmod(beta, P_Q[0], p), P_Q[1], 1];	// P2
 
-        double = doubleJac(iPj[0]);
-        iPj[1] = addJac(double, iPj[0]);
-        iPj[2] = addJac(double, iPj[1]);
-        iPj[3] = addJac(double, iPj[2]);
+        iP[1][1] = [mulmod(beta, iPj[1][0], p), iPj[1][1], iPj[1][2]];
+        iP[1][2] = [mulmod(beta, iPj[2][0], p), iPj[2][1], iPj[2][2]];
+        iP[1][3] = [mulmod(beta, iPj[3][0], p), iPj[3][1], iPj[3][2]];
 
         // Q1 Lookup Table
         iPj = iP[2];
-        iPj[0] = [P_Q[2], P_Q[3], 1];                     // Q1
+        iPj[0] = [P_Q[2], P_Q[3], 1];                   	// Q1
 
         double = doubleJac(iPj[0]);
         iPj[1] = addJac(double, iPj[0]);
@@ -231,13 +229,11 @@ library Numerology {
         iPj[3] = addJac(double, iPj[2]);
 
         // Q2 Lookup Table
-        iPj = iP[3];
-        iPj[0] = [mulmod(beta, P_Q[2], p), P_Q[3], 1];    // Q2
+        iP[3][0] = [mulmod(beta, P_Q[2], p), P_Q[3], 1];	// P2
 
-        double = doubleJac(iPj[0]);
-        iPj[1] = addJac(double, iPj[0]);
-        iPj[2] = addJac(double, iPj[1]);
-        iPj[3] = addJac(double, iPj[2]);
+        iP[3][1] = [mulmod(beta, iPj[1][0], p), iPj[1][1], iPj[1][2]];
+        iP[3][2] = [mulmod(beta, iPj[2][0], p), iPj[2][1], iPj[2][2]];
+        iP[3][3] = [mulmod(beta, iPj[3][0], p), iPj[3][1], iPj[3][2]];
     }
 
     /// @notice Computes the WNAF representation of an integer, and puts the resulting array of coefficients in memory
