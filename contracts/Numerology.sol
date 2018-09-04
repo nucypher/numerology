@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 
-/// @title Numerology: A Soidity library for fast ECC arithmetics using curve secp256k1
+/// @title Numerology: A Solidity library for fast ECC arithmetics using curve secp256k1
 /// @author David Nuñez (david@nucypher.com)
 library Numerology {
 
@@ -159,9 +159,9 @@ library Numerology {
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
-    // Point doubling, 2*P
-    // Params: Px, Py, Pz
-    // Not concerned about the 1 extra mulmod.
+    /// @notice Point doubling in Jacobian coordinates
+    /// @param P An EC point in Jacobian coordinates. 
+    /// @return An EC point in Jacobian coordinates   
     function doubleJac(uint[3] memory P) internal constant returns (uint[3] memory Q) {
         uint256 z = P[2];
         if (z == 0)
@@ -178,7 +178,8 @@ library Numerology {
         Q[2] = mulmod(_2y, z, p);
     }
 
-    // Same as double but mutates P and is internal only.
+    /// @notice Point doubling in Jacobian coordinates, placing the result in the first point
+    /// @param P An EC point in Jacobian coordinates. The result is also stored here.
     function doubleMutates(uint[3] memory P) internal constant {
         uint256 z = P[2];
         if (z == 0)
@@ -239,6 +240,9 @@ library Numerology {
         iPj[3] = addJac(double, iPj[2]);
     }
 
+    /// @notice Computes the WNAF representation of an integer, and puts the resulting array of coefficients in memory
+    /// @param d A 256-bit integer
+    /// @return (ptr, length) The pointer to the first coefficient, and the total length of the array
     function _wnaf(int256 d) internal constant returns (uint256 ptr, uint256 length){
     
         int sign = d < 0 ? -1 : int(1);
@@ -266,6 +270,11 @@ library Numerology {
         return (ptr, length);
     }
 
+    /// @notice Simultaneous multiplication of the form kP + lQ. 
+    /// @dev Scalars k and l can be decomposed such that k = k1 + k2 λ, and l = l1 + l2 λ,
+    /// where λ is specific to some endomorphism of the curve
+    /// @param k_l An array with the decomposition of k and l values, i.e., [k1, k2, l1, l2]
+    /// @param P_Q An array with the affine coordinates of both P and Q, i.e., [P1, P2, Q1, Q2]
     function _sim_mul(int256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
         uint256[4] memory wnaf;
         uint256 max_count = 0;
@@ -282,7 +291,6 @@ library Numerology {
     }
 
     
-
     function _sim_mul_wnaf(uint256[4] memory wnaf_ptr, uint256 length, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
         uint256[3][4][4] memory iP;
         _lookup_sim_mul(iP, P_Q);
