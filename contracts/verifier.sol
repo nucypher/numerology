@@ -4,7 +4,7 @@ import "./Numerology.sol";
 
 contract Verifier {
 
-  function test_proof_verification() public returns (bool) {
+  function test_proof_verification() public view returns (bool) {
     // Verifier.deployed().then(function(inst) { return inst.test_proof_verification.estimateGas(); })
 
     int256[4] memory k_l = [int256(-89243190524605339210527649141408088119), 
