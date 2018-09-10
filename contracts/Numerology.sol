@@ -249,7 +249,7 @@ library Numerology {
         {
             let ki := 0
             ptr := mload(0x40) // Get free memory pointer
-            mstore(0x40, add(ptr, 300)) // Updates free memory pointer to +512 bytes offset
+            mstore(0x40, add(ptr, 300)) // Updates free memory pointer to +300 bytes offset
             for { } gt(k, 0) { } { // while k > 0
                 if and(k, 1) {  // if k is odd:
                     ki := mod(k, 16)
@@ -267,8 +267,8 @@ library Numerology {
     }
 
     /// @notice Simultaneous multiplication of the form kP + lQ. 
-    /// @dev Scalars k and l can be decomposed such that k = k1 + k2 λ, and l = l1 + l2 λ,
-    /// where λ is specific to some endomorphism of the curve
+    /// @dev Scalars k and l are expected to be decomposed such that k = k1 + k2 λ, and l = l1 + l2 λ,
+    /// where λ is specific to the endomorphism of the curve
     /// @param k_l An array with the decomposition of k and l values, i.e., [k1, k2, l1, l2]
     /// @param P_Q An array with the affine coordinates of both P and Q, i.e., [P1, P2, Q1, Q2]
     function _sim_mul(int256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {

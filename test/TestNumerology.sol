@@ -1,9 +1,9 @@
 pragma solidity ^0.4.2;
 
 import "truffle/Assert.sol";
-import "../contracts/FastSecp256k1.sol";
+import "../contracts/Numerology.sol";
 
-contract TestFastSecp256k1 {
+contract TestNumerology {
 
   function testEqJacobian() public {
 
@@ -12,23 +12,23 @@ contract TestFastSecp256k1 {
 
     uint256[3] memory G = [gx, gy, 1];
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G, G), true, "(gx, gy, 1) != (gx, gy, 1)");
+    Assert.equal(Numerology.eq_jacobian(G, G), true, "(gx, gy, 1) != (gx, gy, 1)");
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G, [gx, gy, 2]), false, "(gx, gy, 1) == (gx, gy, 2)");
+    Assert.equal(Numerology.eq_jacobian(G, [gx, gy, 2]), false, "(gx, gy, 1) == (gx, gy, 2)");
 
     uint256[3] memory _3G_a = [5726454693002325744504615879224937090641195997533856518133185097441749801032, 30465733315910832811384596896851271406814174274894972936708357560288818352423, 66156017442994545069917029407362356499253061781520987122418836382606119623594];
     uint256[3] memory _3G_b = [28216391251290707721464832982706805814687820950194043742613772785255587611245, 110090129839246524456372193437225215114818684856101781739663788518581478719626, 34499628904269660561674201530767158034393542375844615658184142552908072257357];
 
-    Assert.equal(FastSecp256k1.eq_jacobian(_3G_a, _3G_b), true, "3G != 3G");
+    Assert.equal(Numerology.eq_jacobian(_3G_a, _3G_b), true, "3G != 3G");
 
     _3G_b[2] = 23523452345234524;
 
-    Assert.equal(FastSecp256k1.eq_jacobian(_3G_a, _3G_b), false, "(3gx, 3gy, 3gz) == (3gx, 3gy, some other z value)");
+    Assert.equal(Numerology.eq_jacobian(_3G_a, _3G_b), false, "(3gx, 3gy, 3gz) == (3gx, 3gy, some other z value)");
 
     uint256[3] memory zero = [uint256(0), 0, 0];
 
-    Assert.equal(FastSecp256k1.eq_jacobian(zero, zero), true, "(0,0,0) != (0,0,0)");
-    Assert.equal(FastSecp256k1.eq_jacobian(zero, G), false, "(0,0,0) == G");
+    Assert.equal(Numerology.eq_jacobian(zero, zero), true, "(0,0,0) != (0,0,0)");
+    Assert.equal(Numerology.eq_jacobian(zero, G), false, "(0,0,0) == G");
   }
 
   function testAddJac() public {
@@ -37,9 +37,9 @@ contract TestFastSecp256k1 {
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
     uint256[3] memory G3 = [5726454693002325744504615879224937090641195997533856518133185097441749801032, 30465733315910832811384596896851271406814174274894972936708357560288818352423, 66156017442994545069917029407362356499253061781520987122418836382606119623594];
 
-    uint256[3] memory G_plus_G2 = FastSecp256k1.addJac(G, G2);    
+    uint256[3] memory G_plus_G2 = Numerology.addJac(G, G2);    
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G3, G_plus_G2), true, "3G != G + 2G");
+    Assert.equal(Numerology.eq_jacobian(G3, G_plus_G2), true, "3G != G + 2G");
   }
 
   function testAddJacMutates() public {
@@ -48,9 +48,9 @@ contract TestFastSecp256k1 {
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
     uint256[3] memory G3 = [5726454693002325744504615879224937090641195997533856518133185097441749801032, 30465733315910832811384596896851271406814174274894972936708357560288818352423, 66156017442994545069917029407362356499253061781520987122418836382606119623594];
 
-    FastSecp256k1.addJacMutates(G, G2);    
+    Numerology.addJacMutates(G, G2);    
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G3, G), true, "3G != G + 2G");
+    Assert.equal(Numerology.eq_jacobian(G3, G), true, "3G != G + 2G");
 
 
   }
@@ -61,9 +61,9 @@ contract TestFastSecp256k1 {
     uint256[3] memory G_again = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1];
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
 
-    FastSecp256k1.addJacMutates(G, G_again);    
+    Numerology.addJacMutates(G, G_again);    
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G2, G), true, "2G != G + G");
+    Assert.equal(Numerology.eq_jacobian(G2, G), true, "2G != G + G");
 
     
   }
@@ -73,9 +73,9 @@ contract TestFastSecp256k1 {
     uint256[3] memory G = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1]; 
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
 
-    FastSecp256k1.doubleMutates(G);    
+    Numerology.doubleMutates(G);    
 
-    Assert.equal(FastSecp256k1.eq_jacobian(G, G2), true, "2 · G != 2G");
+    Assert.equal(Numerology.eq_jacobian(G, G2), true, "2 · G != 2G");
   }
 
   function testSim_Mul() public {
@@ -85,7 +85,7 @@ contract TestFastSecp256k1 {
 
     uint256[4] memory P_Q = [0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8, 0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, 0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a];
     
-    uint256[3] memory kP_lQ = FastSecp256k1._sim_mul(k_l, P_Q);
+    uint256[3] memory kP_lQ = Numerology._sim_mul(k_l, P_Q);
 
     uint256[3] memory expected = [0x7635e27fba8e1f779dcfdde1b1eacbe0571fbe39ecf6056d29ba4bd3ef5e22f2, 0x197888e5cec769ac2f1eb65dbcbc0e49c00a8cdf01f8030d8286b68c1933fb18, 1];
 
@@ -94,7 +94,7 @@ contract TestFastSecp256k1 {
     array[1] = bytes1(0x30 + (kP_lQ[0] % 16));
     array[2] = bytes1(0x30 + (kP_lQ[1] % 16));
     array[3] = bytes1(0x30 + (kP_lQ[2] % 16));
-    Assert.equal(FastSecp256k1.eq_jacobian(kP_lQ, expected), true, string(array));
+    Assert.equal(Numerology.eq_jacobian(kP_lQ, expected), true, string(array));
   }
 
 }
