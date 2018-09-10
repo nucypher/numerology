@@ -272,6 +272,9 @@ library Numerology {
     /// @param k_l An array with the decomposition of k and l values, i.e., [k1, k2, l1, l2]
     /// @param P_Q An array with the affine coordinates of both P and Q, i.e., [P1, P2, Q1, Q2]
     function _sim_mul(int256[4] memory k_l, uint256[4] memory P_Q) internal constant returns (uint[3] memory Q) {
+
+    	require(is_on_curve(P_Q[0], P_Q[1]) && is_on_curve(P_Q[2], P_Q[3]), "Invalid points");
+
         uint256[4] memory wnaf;
         uint256 max_count = 0;
         uint256 count = 0;        
@@ -345,6 +348,17 @@ library Numerology {
             } 
             
         }
+    }
+
+    function is_on_curve(uint256 Px, uint256 Py) public constant returns (bool) {
+        uint256 p = field_order;
+
+        if (Px >= p || Py >= p)
+            return false;
+
+        uint256 y2 = mulmod(Py, Py, p);
+        uint256 x3_plus_7 = addmod(mulmod(mulmod(Px, Px, p), Px, p), 7, p);
+        return y2 == x3_plus_7;
     }
 
 }
