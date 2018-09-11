@@ -350,11 +350,16 @@ library Numerology {
         }
     }
 
+    /// @notice Tests if a point is on the secp256k1 curve
+    /// @param Px The X coordinate of an EC point in affine representation
+    /// @param Py The Y coordinate of an EC point in affine representation
+    /// @return true if (Px, Py) is a valid secp256k1 point; false otherwise
     function is_on_curve(uint256 Px, uint256 Py) public constant returns (bool) {
         uint256 p = field_order;
 
-        if (Px >= p || Py >= p)
+        if (Px >= p || Py >= p){
             return false;
+        }
 
         uint256 y2 = mulmod(Py, Py, p);
         uint256 x3_plus_7 = addmod(mulmod(mulmod(Px, Px, p), Px, p), 7, p);
