@@ -11,7 +11,7 @@ library Numerology {
     /// @param P An EC point in Jacobian coordinates
     /// @param Q An EC point in Jacobian coordinates
     /// @return true if P and Q represent the same point in affine coordinates; false otherwise
-    function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) pure public returns(bool){
+    function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) pure internal returns(bool){
         uint p = field_order;
 
         if(P[2] == 0){
@@ -354,7 +354,7 @@ library Numerology {
     /// @param Px The X coordinate of an EC point in affine representation
     /// @param Py The Y coordinate of an EC point in affine representation
     /// @return true if (Px, Py) is a valid secp256k1 point; false otherwise
-    function is_on_curve(uint256 Px, uint256 Py) public constant returns (bool) {
+    function is_on_curve(uint256 Px, uint256 Py) internal constant returns (bool) {
         uint256 p = field_order;
 
         if (Px >= p || Py >= p){
