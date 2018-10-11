@@ -1,0 +1,15 @@
+def test_numerology(testerchain):
+    contract, _ = testerchain.interface.deploy_contract('TestNumerology')
+
+    tx = contract.functions.testEqJacobian().transact()
+    testerchain.wait_for_receipt(tx)
+    tx = contract.functions.testAddJac().transact()
+    testerchain.wait_for_receipt(tx)
+    tx = contract.functions.testAddJacMutates().transact()
+    testerchain.wait_for_receipt(tx)
+    tx = contract.functions.testAddJacMutatesDoubles().transact()
+    testerchain.wait_for_receipt(tx)
+    tx = contract.functions.testDoubleM_jarl().transact()
+    testerchain.wait_for_receipt(tx)
+    tx = contract.functions.testSim_Mul().transact()
+    testerchain.wait_for_receipt(tx)
