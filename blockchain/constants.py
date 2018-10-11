@@ -11,7 +11,7 @@ DEFAULT_NUMBER_OF_URSULAS_IN_DEVELOPMENT_NETWORK = 10
 
 # Base Filepaths
 BASE_DIR = abspath(dirname(dirname(blockchain.__file__)))
-CONTRACTS_DIR = os.path.join(BASE_DIR, 'contracts')
+CONTRACTS_DIR = os.path.join(BASE_DIR, 'numerology', 'contracts')
 
 # Test Constants
 TEST_CONTRACTS_DIR = os.path.join(BASE_DIR, 'tests', 'contracts')
