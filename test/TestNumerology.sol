@@ -97,4 +97,18 @@ contract TestNumerology {
     Assert.equal(Numerology.eq_jacobian(kP_lQ, expected), true, string(array));
   }
 
+  function testMul_hack() public { 
+    uint256 k = 0x1787f38d854231dfec2b27a0f621414d10bfa95970b3e576aed29e1e8287e51e;
+    
+
+    uint256 Px = 0xa6ecb3f599964fe04c72e486a8f90172493c21f4185f1ab9a7fe05659480c548;
+    uint256 Py = 0xdf67fd3f4255826c234a5262adc70e14a6d42f13ee55b65e885e666e1dd5d3f5;
+
+    uint256 k_Px = 0xaddcb45773b26a2f8ac2143627d54f47a12aab533dc1b41b4e791985e9eca496;
+    uint256 k_Py = 0x72da5adb3a30a2cf147d309b0cf58c76b322c82a5edae164e13dbeed6429c41d;
+
+    Assert.equal(Numerology.ecmulVerify(Px, Py, k, k_Px, k_Py), true, "Wrong EC Multiplication");
+
+  }
+
 }
