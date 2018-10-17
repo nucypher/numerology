@@ -159,6 +159,34 @@ library Numerology {
         P[2] = mulmod(b, mulmod(Pz, Qz, p), p);
     }
 
+    /// @notice Adds two points in affine coordinates, with the result in Jacobian
+    /// @dev Based on the addition formulas from http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
+    /// @param P An EC point in affine coordinates
+    /// @param Q An EC point in affine coordinates
+    /// @return An EC point in Jacobian coordinates with the sum, represented by an array of 3 uint256
+    function add_affine_to_jac(uint[2] memory P, uint[2] memory Q) internal constant returns (uint[3] memory R) {
+
+        uint256 p = field_order;
+        uint256 a   = P[0];
+        uint256 c   = P[1];
+        uint256 t0  = Q[0];
+        uint256 t1  = Q[1];
+
+        if ((a == t0) && (c == t1)){
+            return doubleJac([a, c, 1]);
+        }
+        uint256 d = addmod(t1, p-c, p); // d = t1 - c
+        
+        uint256 b = addmod(t0, p-a, p); // b = t0 - a
+        uint256 e = mulmod(b, b, p); // e = b^2
+        uint256 f = mulmod(e, b, p);  // f = b^3
+        uint256 g = mulmod(a, e, p);
+        R[0] = addmod(mulmod(d, d, p), p-addmod(mulmod(2, g, p), f, p), p);
+        R[1] = addmod(mulmod(d, addmod(g, p-R[0], p), p), p-mulmod(c, f, p), p);
+        R[2] = b;
+    }
+
+
     /// @notice Point doubling in Jacobian coordinates
     /// @param P An EC point in Jacobian coordinates. 
     /// @return An EC point in Jacobian coordinates   
