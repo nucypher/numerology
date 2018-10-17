@@ -65,5 +65,16 @@ contract Verifier {
     return sum_is_correct && kP_is_correct && lQ_is_correct;
 
   }
+
+  function test_add_eq_jac() public view returns (bool) {
+    uint256 e0 = 0xaddcb45773b26a2f8ac2143627d54f47a12aab533dc1b41b4e791985e9eca496; // kP_x
+    uint256 e1 = 0x72da5adb3a30a2cf147d309b0cf58c76b322c82a5edae164e13dbeed6429c41d; // kP_y
+    uint256 e2 = 0xf07716879380e987f8b5551a1d989068d0003061088a869a33ceb9848771c6fd; // lQ_x
+    uint256 e3 = 0x2447ed4564b75b0f9ff84013aaa37c2ab67a2c621b0edc91a06895f19a93aebb; // lQ_y
+    uint256 e4 = 0x9ca8f6ff6a2eb6f62787f70b9f7c4939d1a3890ec87343e4f6716f9f6867eb86; // Rx
+    uint256 e5 = 0x290c40f22995dc8b956d2c63ec060d332d082124d638ed618891171db8bc206f; // Ry
+                                  
+    return Numerology.eq_affine_jacobian([e4, e5], Numerology.add_affine_to_jac([e0, e1], [e2, e3]));
+  }
 }
 
