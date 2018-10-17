@@ -12,24 +12,26 @@ library Numerology {
     /// @param Q An EC point in Jacobian coordinates
     /// @return true if P and Q represent the same point in affine coordinates; false otherwise
     function eq_jacobian(uint256[3] memory P, uint256[3] memory Q) pure public returns(bool){
-        uint p = field_order;
+        uint256 p = field_order;
 
-        if(P[2] == 0){
-            return Q[2] == 0;   // P and Q are both zero.
-        } else if(Q[2] == 0){
+        uint256 Qz = Q[2];
+        uint256 Pz = P[2];
+        if(Pz == 0){
+            return Qz == 0;   // P and Q are both zero.
+        } else if(Qz == 0){
             return false;       // Q is zero but P isn't.
         }
 
         // Now we're sure none of them is zero
 
-        uint256 Q_z_squared = mulmod(Q[2], Q[2], p);
-        uint256 P_z_squared = mulmod(P[2], P[2], p);
+        uint256 Q_z_squared = mulmod(Qz, Qz, p);
+        uint256 P_z_squared = mulmod(Pz, Pz, p);
         if (mulmod(P[0], Q_z_squared, p) != mulmod(Q[0], P_z_squared, p)){
           return false;
         }
 
-        uint256 Q_z_cubed = mulmod(Q_z_squared, Q[2], p);
-        uint256 P_z_cubed = mulmod(P_z_squared, P[2], p);
+        uint256 Q_z_cubed = mulmod(Q_z_squared, Qz, p);
+        uint256 P_z_cubed = mulmod(P_z_squared, Pz, p);
         return mulmod(P[1], Q_z_cubed, p) == mulmod(Q[1], P_z_cubed, p);
     
     }
