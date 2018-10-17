@@ -34,11 +34,29 @@ library Numerology {
     
     }
 
+    /// @notice Equality test of two points, in affine and Jacobian coordinates respectively
+    /// @param P An EC point in affine coordinates
+    /// @param Q An EC point in Jacobian coordinates
+    /// @return true if P and Q represent the same point in affine coordinates; false otherwise
+    function eq_affine_jacobian(uint256[2] memory P, uint256[3] memory Q) pure public returns(bool){
+        uint256 p = field_order;
+
+        uint256 Qz = Q[2];
+        if(Qz == 0){
+            return false;       // Q is zero but P isn't.
+        }
+
+        uint256 Q_z_squared = mulmod(Qz, Qz, p);
+        return mulmod(P[0], Q_z_squared, p) == Q[0] && mulmod(P[1], mulmod(Q_z_squared, Qz, p), p) == Q[1];
+    
+    }
+
+  
     /// @notice Addition of two points in Jacobian coordinates
     /// @dev Based on the addition formulas from http://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2001-b.op3
     /// @param P An EC point in Jacobian coordinates
     /// @param Q An EC point in Jacobian coordinates
-    /// @return An EC point in Jacobian coordinates with the sum , represented by an array of 3 uint256
+    /// @return An EC point in Jacobian coordinates with the sum, represented by an array of 3 uint256
     function addJac(uint[3] memory P, uint[3] memory Q) internal constant returns (uint[3] memory R) {
 
         if(P[2] == 0){
