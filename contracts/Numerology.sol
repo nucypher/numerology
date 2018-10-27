@@ -422,4 +422,14 @@ library Numerology {
 	    return xyAddress == signer;
 	}
 
+	/// @notice Tests if a compressed point is valid, wrt to its corresponding Y coordinate
+    /// @param Psign The sign byte from the compressed notation: 0x02 if the Y coord is even; 0x03 otherwise
+    /// @param Px The X coordinate of an EC point in affine representation
+    /// @param Py The Y coordinate of an EC point in affine representation
+    /// @return true if (Px, Py) is a valid secp256k1 point; false otherwise
+	function check_compressed_point(uint8 Psign, uint256 Px, uint256 Py) public constant returns(bool) {
+		bool correct_sign = Py % 2 == Psign - 2;
+		return correct_sign && is_on_curve(Px, Py);
+	}
+
 }
