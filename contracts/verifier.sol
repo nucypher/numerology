@@ -34,7 +34,7 @@ contract Verifier {
                                   0x197888e5cec769ac2f1eb65dbcbc0e49c00a8cdf01f8030d8286b68c1933fb18, 
                                   1];
 
-    return Numerology.eq_jacobian(kP_lQ, expected);
+    return Numerology.eqJacobian(kP_lQ, expected);
 
   }
 
@@ -58,7 +58,7 @@ contract Verifier {
                                   0x290c40f22995dc8b956d2c63ec060d332d082124d638ed618891171db8bc206f // Ry
                                   ];
 
-    bool sum_is_correct = Numerology.eq_jacobian(Numerology.addJac([expected[0], expected[1], 1], [expected[2], expected[3], 1]), [expected[4], expected[5], 1]);
+    bool sum_is_correct = Numerology.eqJacobian(Numerology.addJac([expected[0], expected[1], 1], [expected[2], expected[3], 1]), [expected[4], expected[5], 1]);
     bool kP_is_correct = Numerology.ecmulVerify(P_Q[0], P_Q[1], k_l[0], expected[0], expected[1]);
     bool lQ_is_correct = Numerology.ecmulVerify(P_Q[2], P_Q[3], k_l[1], expected[2], expected[3]);
 
@@ -74,7 +74,7 @@ contract Verifier {
     uint256 e4 = 0x9ca8f6ff6a2eb6f62787f70b9f7c4939d1a3890ec87343e4f6716f9f6867eb86; // Rx
     uint256 e5 = 0x290c40f22995dc8b956d2c63ec060d332d082124d638ed618891171db8bc206f; // Ry
                                   
-    return Numerology.eq_affine_jacobian([e4, e5], Numerology.add_affine_to_jac([e0, e1], [e2, e3]));
+    return Numerology.eqAffineJacobian([e4, e5], Numerology.addAffineJacobian([e0, e1], [e2, e3]));
   }
 }
 
