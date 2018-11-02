@@ -12,23 +12,23 @@ contract TestNumerology {
 
     uint256[3] memory G = [gx, gy, 1];
 
-    Assert.equal(Numerology.eq_jacobian(G, G), true, "(gx, gy, 1) != (gx, gy, 1)");
+    Assert.equal(Numerology.eqJacobian(G, G), true, "(gx, gy, 1) != (gx, gy, 1)");
 
-    Assert.equal(Numerology.eq_jacobian(G, [gx, gy, 2]), false, "(gx, gy, 1) == (gx, gy, 2)");
+    Assert.equal(Numerology.eqJacobian(G, [gx, gy, 2]), false, "(gx, gy, 1) == (gx, gy, 2)");
 
     uint256[3] memory _3G_a = [5726454693002325744504615879224937090641195997533856518133185097441749801032, 30465733315910832811384596896851271406814174274894972936708357560288818352423, 66156017442994545069917029407362356499253061781520987122418836382606119623594];
     uint256[3] memory _3G_b = [28216391251290707721464832982706805814687820950194043742613772785255587611245, 110090129839246524456372193437225215114818684856101781739663788518581478719626, 34499628904269660561674201530767158034393542375844615658184142552908072257357];
 
-    Assert.equal(Numerology.eq_jacobian(_3G_a, _3G_b), true, "3G != 3G");
+    Assert.equal(Numerology.eqJacobian(_3G_a, _3G_b), true, "3G != 3G");
 
     _3G_b[2] = 23523452345234524;
 
-    Assert.equal(Numerology.eq_jacobian(_3G_a, _3G_b), false, "(3gx, 3gy, 3gz) == (3gx, 3gy, some other z value)");
+    Assert.equal(Numerology.eqJacobian(_3G_a, _3G_b), false, "(3gx, 3gy, 3gz) == (3gx, 3gy, some other z value)");
 
     uint256[3] memory zero = [uint256(0), 0, 0];
 
-    Assert.equal(Numerology.eq_jacobian(zero, zero), true, "(0,0,0) != (0,0,0)");
-    Assert.equal(Numerology.eq_jacobian(zero, G), false, "(0,0,0) == G");
+    Assert.equal(Numerology.eqJacobian(zero, zero), true, "(0,0,0) != (0,0,0)");
+    Assert.equal(Numerology.eqJacobian(zero, G), false, "(0,0,0) == G");
   }
 
   function testAddJac() public {
@@ -39,31 +39,31 @@ contract TestNumerology {
 
     uint256[3] memory G_plus_G2 = Numerology.addJac(G, G2);    
 
-    Assert.equal(Numerology.eq_jacobian(G3, G_plus_G2), true, "3G != G + 2G");
+    Assert.equal(Numerology.eqJacobian(G3, G_plus_G2), true, "3G != G + 2G");
   }
 
-  function testAddJacMutates() public {
+  function testaddJacobianMutates() public {
 
     uint256[3] memory G = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1];
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
     uint256[3] memory G3 = [5726454693002325744504615879224937090641195997533856518133185097441749801032, 30465733315910832811384596896851271406814174274894972936708357560288818352423, 66156017442994545069917029407362356499253061781520987122418836382606119623594];
 
-    Numerology.addJacMutates(G, G2);    
+    Numerology.addJacobianMutates(G, G2);    
 
-    Assert.equal(Numerology.eq_jacobian(G3, G), true, "3G != G + 2G");
+    Assert.equal(Numerology.eqJacobian(G3, G), true, "3G != G + 2G");
 
 
   }
 
-  function testAddJacMutatesDoubles() public {
+  function testaddJacobianMutatesDoubles() public {
 
     uint256[3] memory G = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1];
     uint256[3] memory G_again = [0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8, 1];
     uint256[3] memory G2 = [56576513649176532955305617254616790498672209379484940581393603843805619269570, 39155707150128334349216371677407456506802956851096117747929288260567018884059, 65341020041517633956166170261014086368942546761318486551877808671514674964848];
 
-    Numerology.addJacMutates(G, G_again);    
+    Numerology.addJacobianMutates(G, G_again);    
 
-    Assert.equal(Numerology.eq_jacobian(G2, G), true, "2G != G + G");
+    Assert.equal(Numerology.eqJacobian(G2, G), true, "2G != G + G");
 
     
   }
@@ -75,7 +75,7 @@ contract TestNumerology {
 
     Numerology.doubleMutates(G);    
 
-    Assert.equal(Numerology.eq_jacobian(G, G2), true, "2 · G != 2G");
+    Assert.equal(Numerology.eqJacobian(G, G2), true, "2 · G != 2G");
   }
 
   function testSim_Mul() public {
@@ -94,7 +94,7 @@ contract TestNumerology {
     array[1] = bytes1(0x30 + (kP_lQ[0] % 16));
     array[2] = bytes1(0x30 + (kP_lQ[1] % 16));
     array[3] = bytes1(0x30 + (kP_lQ[2] % 16));
-    Assert.equal(Numerology.eq_jacobian(kP_lQ, expected), true, string(array));
+    Assert.equal(Numerology.eqJacobian(kP_lQ, expected), true, string(array));
   }
 
   function testMul_hack() public { 
@@ -126,9 +126,9 @@ uint256 e5 = 0x290c40f22995dc8b956d2c63ec060d332d082124d638ed618891171db8bc206f;
     uint256[3] memory expected = [e4, e5, 1];
     
       
-    uint256[3] memory P_plus_Q = Numerology.add_affine_to_jac(P, Q);    
+    uint256[3] memory P_plus_Q = Numerology.addAffineJacobian(P, Q);    
 
-    Assert.equal(Numerology.eq_jacobian(expected, P_plus_Q), true, "add_affine_to_jac is wrong");
+    Assert.equal(Numerology.eqJacobian(expected, P_plus_Q), true, "add_affine_to_jac is wrong");
   }
 
 }
